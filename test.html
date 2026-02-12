@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>妖怪退魔録 - 自動テスト</title>
+    <style>
+        body { background: #1a1a2e; color: #e0e0e0; font-family: monospace; padding: 20px; }
+        .test-group { margin: 16px 0; padding: 12px; background: #16213e; border-radius: 8px; }
+        .test-group h3 { margin: 0 0 8px; color: #8b5cf6; }
+        .pass { color: #22c55e; }
+        .fail { color: #ef4444; font-weight: bold; }
+        .warn { color: #f59e0b; }
+        .test-line { padding: 2px 0; font-size: 13px; }
+        #summary { font-size: 18px; margin: 24px 0; padding: 16px; background: #0f3460; border-radius: 8px; }
+        .detail { color: #9e9e9e; font-size: 11px; margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <!-- 最小限のDOM要素（テストに必要なもの） -->
+    <div id="app" style="display:none">
+        <div id="title-screen" class="screen active"></div>
+        <div id="village-screen" class="screen"></div>
+        <div id="dungeon-select-screen" class="screen"></div>
+        <div id="battle-screen" class="screen">
+            <div id="dungeon-name"></div>
+            <div id="floor-display"></div>
+            <div id="player-hp-bar"></div>
+            <div id="player-hp-text"></div>
+            <div id="player-mp-bar"></div>
+            <div id="player-mp-text"></div>
+            <div id="player-exp-bar"></div>
+            <div id="player-exp-text"></div>
+            <div id="player-level"></div>
+            <div id="gold-display"></div>
+            <div id="spirit-stone-display"></div>
+            <div id="player-stats"></div>
+            <div id="current-weapon-info"></div>
+            <div id="shikigami-party"></div>
+            <div id="enemy-area">
+                <div id="enemy-wave"></div>
+                <div id="click-area"></div>
+                <div id="damage-numbers"></div>
+            </div>
+            <div id="weapon-ui"></div>
+            <div id="kill-count"></div>
+            <div id="kill-required"></div>
+            <div id="btn-auto-toggle"></div>
+            <div id="tab-skills"></div>
+            <div id="tab-equipment"></div>
+            <div id="tab-items"></div>
+            <div id="tab-log"></div>
+            <div id="floor-transition">
+                <div id="floor-transition-text"></div>
+                <div id="floor-transition-subtitle"></div>
+            </div>
+            <div id="player-hit-overlay"></div>
+            <div id="battle-right-panel"></div>
+            <div id="mobile-panel-backdrop"></div>
+        </div>
+        <div id="levelup-modal" class="modal">
+            <div id="levelup-hint"></div>
+            <div id="levelup-choices"></div>
+        </div>
+        <div id="drop-modal" class="modal">
+            <div id="drop-list"></div>
+        </div>
+        <div id="result-modal" class="modal">
+            <div id="result-title"></div>
+            <div id="result-details"></div>
+        </div>
+        <div id="smithy-screen" class="screen"><div id="smithy-content"></div></div>
+        <div id="inventory-screen" class="screen"><div id="inventory-content"></div></div>
+        <div id="shikigami-screen" class="screen"><div id="shikigami-content"></div></div>
+        <div id="gacha-screen" class="screen"><div id="gacha-content"></div></div>
+        <div id="arena-screen" class="screen"><div id="arena-content"></div></div>
+        <div id="encyclopedia-screen" class="screen">
+            <div id="enc-summary"></div>
+            <div id="enc-content"></div>
+        </div>
+        <div id="settings-screen" class="screen"><div id="settings-content"></div></div>
+        <div id="notification-container"></div>
+        <div id="title-particles"></div>
+        <div id="village-player-summary"></div>
+        <div id="dungeon-list"></div>
+        <div id="gacha-spirit-result" class="gacha-result"></div>
+        <div id="gacha-gold-result" class="gacha-result"></div>
+        <div id="arena-opponents"></div>
+        <div id="arena-battle-result"></div>
+        <div id="save-io-area"></div>
+    </div>
+
+    <h1>妖怪退魔録 - 自動テスト結果</h1>
+    <div id="summary"></div>
+    <div id="results"></div>
+
+    <!-- ゲームスクリプト読み込み -->
+    <script src="js/data/enemies.js"></script>
+    <script src="js/data/equipment.js"></script>
+    <script src="js/data/skills.js"></script>
+    <script src="js/data/shikigami.js"></script>
+    <script src="js/data/dungeons.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/weapons.js"></script>
+    <script src="js/dungeon.js"></script>
+    <script src="js/equipment.js"></script>
+    <script src="js/shikigami.js"></script>
+    <script src="js/smithy.js"></script>
+    <script src="js/gacha.js"></script>
+    <script src="js/arena.js"></script>
+    <script src="js/encyclopedia.js"></script>
+    <script src="js/save.js"></script>
+    <script src="js/ui.js"></script>
+
+    <script>
+    // ===== テストフレームワーク =====
+    const TestRunner = {
+        results: [],
+        currentGroup: '',
+
+        group(name) {
+            this.currentGroup = name;
+        },
+
+        assert(description, condition, detail = '') {
+            this.results.push({
+                group: this.currentGroup,
+                description,
+                passed: !!condition,
+                detail
+            });
+        },
+
+        assertEqual(description, actual, expected, detail = '') {
+            const passed = actual === expected;
+            this.results.push({
+                group: this.currentGroup,
+                description,
+                passed,
+                detail: passed ? detail : `期待値: ${JSON.stringify(expected)}, 実際: ${JSON.stringify(actual)}. ${detail}`
+            });
+        },
+
+        assertRange(description, value, min, max) {
+            const passed = value >= min && value <= max;
+            this.results.push({
+                group: this.currentGroup,
+                description,
+                passed,
+                detail: passed ? '' : `値 ${value} が範囲 [${min}, ${max}] の外`
+            });
+        },
+
+        render() {
+            const groups = {};
+            for (const r of this.results) {
+                if (!groups[r.group]) groups[r.group] = [];
+                groups[r.group].push(r);
+            }
+
+            const totalPass = this.results.filter(r => r.passed).length;
+            const totalFail = this.results.filter(r => !r.passed).length;
+            const total = this.results.length;
+
+            document.getElementById('summary').innerHTML = `
+                <span class="${totalFail === 0 ? 'pass' : 'fail'}">
+                    テスト結果: ${totalPass}/${total} 合格 (${totalFail} 不合格)
+                </span>
+            `;
+
+            let html = '';
+            for (const [groupName, tests] of Object.entries(groups)) {
+                const groupPass = tests.filter(t => t.passed).length;
+                const groupTotal = tests.length;
+                const allPassed = groupPass === groupTotal;
+
+                html += `<div class="test-group">
+                    <h3>${allPassed ? '✅' : '❌'} ${groupName} (${groupPass}/${groupTotal})</h3>`;
+                for (const t of tests) {
+                    html += `<div class="test-line ${t.passed ? 'pass' : 'fail'}">
+                        ${t.passed ? '  ✓' : '  ✗'} ${t.description}
+                    </div>`;
+                    if (!t.passed && t.detail) {
+                        html += `<div class="detail">${t.detail}</div>`;
+                    }
+                }
+                html += '</div>';
+            }
+
+            document.getElementById('results').innerHTML = html;
+        }
+    };
+
+    // ===== 状態リセットヘルパー =====
+    function resetGameState() {
+        GameState.player = {
+            name: '退魔師', gold: 500, spiritStones: 50, satoriPoints: 0,
+            totalClears: 0, totalDefeats: 0, highestFloor: {}, clearedDungeons: {},
+            firstClearBonuses: {},
+            satoriBonuses: { atk: 0, def: 0, hp: 0, critRate: 0, goldBonus: 0, expBonus: 0, dropRate: 0 }
+        };
+        GameState.inventory = { equipment: [], materials: {}, maxEquipSlots: 50 };
+        GameState.equipped = { weapon: null, head: null, body: null, hands: null, feet: null, charm: null };
+        GameState.shikigami = { owned: {}, party: [null, null, null] };
+        GameState.gachaPity = { spirit: 0, gold: 0 };
+        GameState.dungeon = {
+            active: false, currentDungeon: null, currentFloor: 1,
+            playerLevel: 1, playerExp: 0, playerHP: 100, playerMaxHP: 100,
+            playerMP: 50, playerMaxMP: 50, playerATK: 10, playerDEF: 5,
+            playerCritRate: 5, playerCritDmg: 150,
+            acquiredSkills: {}, lootedEquipment: [], lootedMaterials: {},
+            lootedGold: 0, lootedSpiritStones: 0,
+            currentEnemies: [], enemyAttackTimers: {}, killCount: 0, killsRequired: 5,
+            floorCleared: false, autoAttack: false, autoAttackTimer: null,
+            weaponState: {}, buffs: [], enemyDebuffs: [], shikigamiTimers: [],
+            reviveUsed: false, pendingLevelUps: 0
+        };
+        GameState.arena = { rank: 1000, wins: 0, losses: 0, medals: 0 };
+        GameState.encyclopedia = { discoveredEnemies: {}, achievements: {}, craftCount: 0 };
+        GameState.settings = { soundEnabled: false, autoSave: true, damageNumbers: true, shakeScreen: true };
+        GameState.battleLog = [];
+    }
+
+    // ===== テスト実行 =====
+    function runAllTests() {
+        resetGameState();
+
+        // ==========================================
+        // 1. データ定義の完全性テスト
+        // ==========================================
+        TestRunner.group('1. データ定義の完全性');
+
+        // 敵データ
+        const enemyCount = Object.keys(ENEMIES).length;
+        TestRunner.assert(`敵データが存在する (${enemyCount}種)`, enemyCount > 0);
+        for (const [id, enemy] of Object.entries(ENEMIES)) {
+            TestRunner.assert(`敵[${id}] - 必須フィールド完備`,
+                enemy.id && enemy.name && enemy.emoji &&
+                enemy.baseHP > 0 && enemy.baseATK >= 0 && enemy.baseDEF >= 0 &&
+                enemy.expReward > 0 && enemy.goldReward > 0,
+                `HP:${enemy.baseHP} ATK:${enemy.baseATK} DEF:${enemy.baseDEF}`
+            );
+        }
+
+        // ボスデータ
+        const bossCount = Object.keys(BOSSES).length;
+        TestRunner.assert(`ボスデータが存在する (${bossCount}体)`, bossCount > 0);
+        for (const [id, boss] of Object.entries(BOSSES)) {
+            TestRunner.assert(`ボス[${id}] - isBossフラグがtrue`, boss.isBoss === true);
+            TestRunner.assert(`ボス[${id}] - 霊石報酬がある`, boss.spiritStoneReward > 0);
+        }
+
+        // ダンジョンデータ
+        const dungeonCount = Object.keys(DUNGEONS).length;
+        TestRunner.assert(`ダンジョンデータが存在する (${dungeonCount}個)`, dungeonCount > 0);
+        for (const [id, dungeon] of Object.entries(DUNGEONS)) {
+            TestRunner.assert(`ダンジョン[${id}] - 敵テーブルが存在`,
+                !!DUNGEON_ENEMIES[dungeon.enemyTable],
+                `enemyTable: ${dungeon.enemyTable}`
+            );
+            // ボス階のボスが存在するか
+            if (dungeon.bossFloors) {
+                for (const [floor, bossId] of Object.entries(dungeon.bossFloors)) {
+                    TestRunner.assert(`ダンジョン[${id}] B${floor}F ボス[${bossId}]が存在`,
+                        !!BOSSES[bossId]
+                    );
+                }
+            }
+        }
+
+        // 敵テーブルの参照整合性
+        for (const [tableId, enemies] of Object.entries(DUNGEON_ENEMIES)) {
+            for (const enemyId of enemies) {
+                TestRunner.assert(`敵テーブル[${tableId}] - 敵[${enemyId}]が存在`,
+                    !!ENEMIES[enemyId]
+                );
+            }
+        }
+
+        // スキルデータ
+        const skillCount = Object.keys(LEVELUP_SKILLS).length;
+        TestRunner.assert(`スキルデータが存在する (${skillCount}個)`, skillCount > 0);
+        for (const [id, skill] of Object.entries(LEVELUP_SKILLS)) {
+            TestRunner.assert(`スキル[${id}] - カテゴリが正しい`,
+                ['budo', 'onmyo', 'jintsuu'].includes(skill.category),
+                `category: ${skill.category}`
+            );
+            TestRunner.assert(`スキル[${id}] - effectオブジェクトが存在`,
+                typeof skill.effect === 'object'
+            );
+        }
+
+        // 式神データ
+        const shikiCount = Object.keys(SHIKIGAMI_DATA).length;
+        TestRunner.assert(`式神データが存在する (${shikiCount}体)`, shikiCount > 0);
+        for (const [id, shiki] of Object.entries(SHIKIGAMI_DATA)) {
+            TestRunner.assert(`式神[${id}] - 必須フィールド完備`,
+                shiki.stars >= 1 && shiki.stars <= 5 && shiki.skill && shiki.passive,
+                `stars: ${shiki.stars}`
+            );
+            if (shiki.obtainMethod === 'boss') {
+                TestRunner.assert(`式神[${id}] - ボス[${shiki.obtainBoss}]が存在`,
+                    !!BOSSES[shiki.obtainBoss]
+                );
+            }
+        }
+
+        // エンチャントデータ
+        const enchantCount = Object.keys(ENCHANT_POOL).length;
+        TestRunner.assert(`エンチャントデータが存在する (${enchantCount}個)`, enchantCount > 0);
+        for (const [id, ench] of Object.entries(ENCHANT_POOL)) {
+            TestRunner.assert(`エンチャント[${id}] - min <= max`, ench.min <= ench.max);
+        }
+
+        // 素材データ
+        const matCount = Object.keys(MATERIALS).length;
+        TestRunner.assert(`素材データが存在する (${matCount}個)`, matCount > 0);
+
+        // ドロップ素材の参照整合性
+        for (const [id, enemy] of Object.entries(ENEMIES)) {
+            if (enemy.drops) {
+                for (const drop of enemy.drops) {
+                    TestRunner.assert(`敵[${id}] ドロップ素材[${drop.id}]が定義済み`,
+                        !!MATERIALS[drop.id]
+                    );
+                }
+            }
+        }
+        for (const [id, boss] of Object.entries(BOSSES)) {
+            if (boss.drops) {
+                for (const drop of boss.drops) {
+                    TestRunner.assert(`ボス[${id}] ドロップ素材[${drop.id}]が定義済み`,
+                        !!MATERIALS[drop.id]
+                    );
+                }
+            }
+        }
+
+        // クラフトレシピの素材整合性
+        for (const [id, recipe] of Object.entries(CRAFT_RECIPES)) {
+            for (const [matId, count] of Object.entries(recipe.materials)) {
+                TestRunner.assert(`レシピ[${id}] 素材[${matId}]が定義済み`,
+                    !!MATERIALS[matId]
+                );
+            }
+        }
+
+        // ==========================================
+        // 2. ユーティリティ関数テスト
+        // ==========================================
+        TestRunner.group('2. ユーティリティ関数');
+
+        // randomInt
+        for (let i = 0; i < 100; i++) {
+            const val = randomInt(1, 10);
+            if (val < 1 || val > 10) {
+                TestRunner.assert('randomInt(1,10) が範囲内', false, `値: ${val}`);
+                break;
+            }
+        }
+        TestRunner.assert('randomInt(1,10) が範囲内 (100回テスト)', true);
+
+        // randomFloat
+        for (let i = 0; i < 100; i++) {
+            const val = randomFloat(0.5, 1.5);
+            if (val < 0.5 || val > 1.5) {
+                TestRunner.assert('randomFloat(0.5,1.5) が範囲内', false, `値: ${val}`);
+                break;
+            }
+        }
+        TestRunner.assert('randomFloat(0.5,1.5) が範囲内 (100回テスト)', true);
+
+        // formatNumber
+        TestRunner.assertEqual('formatNumber(999)', formatNumber(999), '999');
+        TestRunner.assertEqual('formatNumber(10000)', formatNumber(10000), '1.0万');
+        TestRunner.assertEqual('formatNumber(100000000)', formatNumber(100000000), '1.0億');
+
+        // 属性相性
+        TestRunner.assertEqual('火→木 は有利 (1.5)', getElementMultiplier('fire', 'wood'), 1.5);
+        TestRunner.assertEqual('木→火 は不利 (0.7)', getElementMultiplier('wood', 'fire'), 0.7);
+        TestRunner.assertEqual('火→水 は不利 (0.7)', getElementMultiplier('fire', 'water'), 0.7);
+        TestRunner.assertEqual('水→火 は有利 (1.5)', getElementMultiplier('water', 'fire'), 1.5);
+        TestRunner.assertEqual('火→火 は等倍 (1.0)', getElementMultiplier('fire', 'fire'), 1.0);
+        TestRunner.assertEqual('null→fire は等倍 (1.0)', getElementMultiplier(null, 'fire'), 1.0);
+
+        // 属性名
+        TestRunner.assertEqual('getElementName("fire")', getElementName('fire'), '火');
+        TestRunner.assertEqual('getElementName("water")', getElementName('water'), '水');
+
+        // レアリティ
+        TestRunner.assertEqual('getRarityName("common")', getRarityName('common'), '凡');
+        TestRunner.assertEqual('getRarityName("legendary")', getRarityName('legendary'), '伝説');
+
+        // UID生成
+        const uid1 = generateUID();
+        const uid2 = generateUID();
+        TestRunner.assert('generateUID() はユニーク', uid1 !== uid2);
+
+        // 経験値テーブル
+        const exp1 = getExpToNextLevel(1);
+        const exp5 = getExpToNextLevel(5);
+        const exp10 = getExpToNextLevel(10);
+        TestRunner.assert('経験値テーブル: Lv1 < Lv5 < Lv10', exp1 < exp5 && exp5 < exp10, `Lv1:${exp1} Lv5:${exp5} Lv10:${exp10}`);
+
+        // フロアスケーリング
+        const scale1 = getFloorScaling('forest', 1);
+        const scale10 = getFloorScaling('forest', 10);
+        TestRunner.assert('フロアスケーリング: 1F < 10F', scale1 < scale10, `1F:${scale1} 10F:${scale10}`);
+        const scaleDark = getFloorScaling('dark', 1);
+        TestRunner.assert('dark の基礎倍率 > forest', scaleDark > scale1);
+
+        // weightedRandom
+        const weights = { a: 100, b: 0 };
+        TestRunner.assertEqual('weightedRandom({a:100, b:0})', weightedRandom(weights), 'a');
+
+        // starsDisplay
+        TestRunner.assertEqual('starsDisplay(3)', starsDisplay(3), '★★★☆☆');
+        TestRunner.assertEqual('starsDisplay(5)', starsDisplay(5), '★★★★★');
+
+        // ==========================================
+        // 3. ステータス計算テスト
+        // ==========================================
+        TestRunner.group('3. ステータス計算');
+
+        resetGameState();
+        const baseStats = calculatePlayerStats();
+        TestRunner.assert('基礎ATK > 0', baseStats.atk > 0, `ATK: ${baseStats.atk}`);
+        TestRunner.assert('基礎DEF > 0', baseStats.def > 0, `DEF: ${baseStats.def}`);
+        TestRunner.assert('基礎maxHP > 0', baseStats.maxHP > 0, `maxHP: ${baseStats.maxHP}`);
+        TestRunner.assert('基礎maxMP > 0', baseStats.maxMP > 0, `maxMP: ${baseStats.maxMP}`);
+        TestRunner.assertEqual('基礎weaponType = fist', baseStats.weaponType, 'fist');
+
+        // 武器装備時
+        GameState.equipped.weapon = {
+            uid: 'test1', name: 'テスト刀', slot: 'weapon', weaponType: 'katana',
+            rarity: 'rare', atk: 100, def: 0, hp: 0, element: 'fire',
+            enchants: [], enhanceLevel: 0, fixedEffect: null
+        };
+        const weaponStats = calculatePlayerStats();
+        TestRunner.assert('武器装備でATKが増加', weaponStats.atk > baseStats.atk, `無し:${baseStats.atk} 有り:${weaponStats.atk}`);
+        TestRunner.assertEqual('武器装備でweaponType変更', weaponStats.weaponType, 'katana');
+        TestRunner.assertEqual('武器属性が反映', weaponStats.weaponElement, 'fire');
+
+        // 防具装備時
+        GameState.equipped.body = {
+            uid: 'test2', name: 'テスト鎧', slot: 'body',
+            rarity: 'rare', atk: 0, def: 50, hp: 100, element: null,
+            enchants: [], enhanceLevel: 0, fixedEffect: null
+        };
+        const armorStats = calculatePlayerStats();
+        TestRunner.assert('防具でDEFが増加', armorStats.def > weaponStats.def);
+        TestRunner.assert('防具でmaxHPが増加', armorStats.maxHP > weaponStats.maxHP);
+
+        // エンチャント効果
+        GameState.equipped.weapon.enchants = [
+            { id: 'goriki', name: '剛力', value: 20, display: 'ATK +20%' },
+            { id: 'kaishin', name: '会心', value: 10, display: 'クリティカル率 +10%' }
+        ];
+        const enchStats = calculatePlayerStats();
+        TestRunner.assert('エンチャントでATK%増加', enchStats.atkPercent >= 20);
+        TestRunner.assert('エンチャントでクリティカル率増加', enchStats.critRate > armorStats.critRate);
+
+        // スキル効果
+        GameState.dungeon.acquiredSkills = { 'budo_goriki': 2 };
+        const skillStats = calculatePlayerStats();
+        TestRunner.assert('スキルでclickDmgPercent増加', skillStats.clickDmgPercent >= 100, `clickDmgPercent: ${skillStats.clickDmgPercent}`);
+
+        // 式神パッシブ
+        GameState.shikigami.owned['hinotama_shiki'] = { level: 1, exp: 0, affection: 0 };
+        GameState.shikigami.party = ['hinotama_shiki', null, null];
+        const shikiStats = calculatePlayerStats();
+        TestRunner.assert('式神パッシブで火属性ダメージ増加', shikiStats.elemDmg.fire > 0);
+
+        // レベルアップ時のステータス増加
+        resetGameState();
+        GameState.dungeon.playerLevel = 10;
+        const lv10Stats = calculatePlayerStats();
+        const lv1Stats = (() => { GameState.dungeon.playerLevel = 1; return calculatePlayerStats(); })();
+        TestRunner.assert('Lv10 > Lv1 のATK', lv10Stats.atk > lv1Stats.atk);
+        TestRunner.assert('Lv10 > Lv1 のDEF', lv10Stats.def > lv1Stats.def);
+        TestRunner.assert('Lv10 > Lv1 のmaxHP', lv10Stats.maxHP > lv1Stats.maxHP);
+
+        // ==========================================
+        // 4. 戦闘システムテスト
+        // ==========================================
+        TestRunner.group('4. 戦闘システム');
+
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.currentDungeon = 'forest';
+        GameState.dungeon.currentFloor = 1;
+
+        // 敵スポーン
+        Combat.spawnEnemyWave();
+        const alive = Combat.getAliveEnemies();
+        TestRunner.assert('敵ウェーブスポーン成功', alive.length > 0, `敵数: ${alive.length}`);
+        TestRunner.assert('敵にHPがある', alive[0].hp > 0);
+        TestRunner.assert('敵にpositionがある', alive[0].position !== undefined);
+
+        // ダメージ計算
+        const stats = calculatePlayerStats();
+        const testEnemy = alive[0];
+        const damage = Combat.calculateDamage(stats, testEnemy, 1.0);
+        TestRunner.assert('ダメージ計算 > 0', damage > 0, `damage: ${damage}`);
+
+        // クリック攻撃
+        const hpBefore = testEnemy.hp;
+        Combat.performClick(1.0, [testEnemy]);
+        TestRunner.assert('クリック攻撃で敵HPが減少', testEnemy.hp < hpBefore, `前:${hpBefore} 後:${testEnemy.hp}`);
+
+        // 敵撃破テスト
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.currentDungeon = 'forest';
+        const weakEnemy = {
+            id: 'test_enemy', name: 'テスト敵', emoji: '👻',
+            element: null, hp: 1, maxHP: 1, atk: 1, def: 0,
+            expReward: 100, goldReward: 50, position: 1,
+            drops: []
+        };
+        GameState.dungeon.currentEnemies = [weakEnemy];
+        GameState.dungeon.enemyAttackTimers = { 1: 0 };
+        const expBefore = GameState.dungeon.playerExp;
+        const goldBefore = GameState.dungeon.lootedGold;
+        Combat.applyDamageToEnemy(10, false, weakEnemy);
+        TestRunner.assert('敵撃破後にEXPが増加', GameState.dungeon.playerExp > expBefore);
+        TestRunner.assert('敵撃破後にGoldが増加', GameState.dungeon.lootedGold > goldBefore);
+        TestRunner.assertEqual('敵のHP = 0', weakEnemy.hp, 0);
+
+        // レベルアップ
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.playerLevel = 1;
+        GameState.dungeon.playerExp = getExpToNextLevel(1) + 1;
+        Combat.checkLevelUp();
+        TestRunner.assert('レベルアップが発生', GameState.dungeon.playerLevel > 1, `Lv: ${GameState.dungeon.playerLevel}`);
+
+        // 回復テスト
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.playerHP = 50;
+        GameState.dungeon.playerMaxHP = 100;
+        Combat.healPlayer(30);
+        TestRunner.assertEqual('回復後のHP', GameState.dungeon.playerHP, 80);
+
+        // 回復上限テスト
+        Combat.healPlayer(1000);
+        TestRunner.assertEqual('HPは最大HPを超えない', GameState.dungeon.playerHP, GameState.dungeon.playerMaxHP);
+
+        // 被ダメテスト
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.playerHP = 100;
+        GameState.dungeon.playerMaxHP = 100;
+        const attackEnemy = { name: '攻撃敵', atk: 50, element: null, hp: 100, position: 1 };
+        Combat.enemyAttackFrom(attackEnemy);
+        TestRunner.assert('敵攻撃でプレイヤーHPが減少', GameState.dungeon.playerHP < 100);
+
+        // 無敵バフテスト
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.playerHP = 100;
+        GameState.dungeon.playerMaxHP = 100;
+        GameState.dungeon.buffs = [{ type: 'invincible', remaining: 10 }];
+        const hpBeforeBuff = GameState.dungeon.playerHP;
+        Combat.enemyAttackFrom({ name: 'テスト', atk: 999, element: null, hp: 100, position: 1 });
+        TestRunner.assertEqual('無敵バフ中はダメージ0', GameState.dungeon.playerHP, hpBeforeBuff);
+
+        // 復活テスト
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.playerHP = 1;
+        GameState.dungeon.playerMaxHP = 100;
+        GameState.dungeon.acquiredSkills = { 'jintsuu_fukkatsu': 1 };
+        GameState.dungeon.reviveUsed = false;
+        Combat.enemyAttackFrom({ name: 'テスト', atk: 9999, def: 0, element: null, hp: 100, position: 1 });
+        TestRunner.assert('復活スキルが発動', GameState.dungeon.playerHP > 0, `HP: ${GameState.dungeon.playerHP}`);
+        TestRunner.assert('復活フラグがON', GameState.dungeon.reviveUsed === true);
+
+        // ボススポーン
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.currentDungeon = 'forest';
+        GameState.dungeon.currentFloor = 10;
+        Combat.spawnBoss('boss_yamawarashi');
+        const bossAlive = Combat.getAliveEnemies();
+        TestRunner.assert('ボスがスポーンした', bossAlive.length === 1);
+        TestRunner.assert('ボスのisBossフラグ', bossAlive[0].isBoss === true);
+        TestRunner.assert('ボスのposition = 1 (中央)', bossAlive[0].position === 1);
+
+        // ==========================================
+        // 5. ダンジョンシステムテスト
+        // ==========================================
+        TestRunner.group('5. ダンジョンシステム');
+
+        // ダンジョン開始
+        resetGameState();
+        Dungeon.startDungeon('forest');
+        TestRunner.assert('ダンジョンがactive', GameState.dungeon.active === true);
+        TestRunner.assertEqual('currentDungeon = forest', GameState.dungeon.currentDungeon, 'forest');
+        TestRunner.assertEqual('currentFloor = 1', GameState.dungeon.currentFloor, 1);
+        TestRunner.assert('プレイヤーHPが設定済み', GameState.dungeon.playerHP > 0);
+        TestRunner.assert('敵がスポーン済み', GameState.dungeon.currentEnemies.length > 0);
+        Dungeon.stopGameLoop();
+
+        // アンロック条件
+        TestRunner.assert('初心者の森はアンロック済み', Dungeon.isDungeonUnlocked('forest'));
+        TestRunner.assert('妖狐の社は未アンロック', !Dungeon.isDungeonUnlocked('shrine'));
+        GameState.player.clearedDungeons['forest'] = true;
+        TestRunner.assert('森クリア後に社がアンロック', Dungeon.isDungeonUnlocked('shrine'));
+
+        // 報酬適用テスト
+        resetGameState();
+        GameState.dungeon.lootedGold = 1000;
+        GameState.dungeon.lootedSpiritStones = 50;
+        GameState.dungeon.lootedMaterials = { 'wood_shard': 10 };
+        GameState.dungeon.lootedEquipment = [
+            { uid: 'test', name: 'テスト武器', slot: 'weapon', rarity: 'common', enchants: [] }
+        ];
+
+        const goldBefore2 = GameState.player.gold;
+        Dungeon.applyRewards(true);
+        TestRunner.assertEqual('成功時ゴールド全額', GameState.player.gold, goldBefore2 + 1000);
+        TestRunner.assertEqual('成功時霊石全額', GameState.player.spiritStones, 100); // 50初期 + 50
+        TestRunner.assertEqual('成功時素材全数', GameState.inventory.materials['wood_shard'], 10);
+        TestRunner.assertEqual('成功時装備保持', GameState.inventory.equipment.length, 1);
+
+        // 失敗時の報酬半減
+        resetGameState();
+        GameState.dungeon.lootedGold = 1000;
+        GameState.dungeon.lootedSpiritStones = 50;
+        GameState.dungeon.lootedEquipment = [
+            { uid: 'test', name: 'テスト', slot: 'weapon', rarity: 'common', enchants: [] }
+        ];
+        const goldBefore3 = GameState.player.gold;
+        Dungeon.applyRewards(false);
+        TestRunner.assertEqual('失敗時ゴールド半減', GameState.player.gold, goldBefore3 + 500);
+        TestRunner.assertEqual('失敗時装備消失', GameState.inventory.equipment.length, 0);
+
+        // ==========================================
+        // 6. 装備システムテスト
+        // ==========================================
+        TestRunner.group('6. 装備システム');
+
+        resetGameState();
+
+        // ボス武器生成
+        const bossWeapon = Equipment.generateBossWeapon({
+            baseName: 'テスト武器', slot: 'weapon', weaponType: 'katana',
+            baseATK: 100, element: 'fire', chance: 1.0,
+            enchantSlots: { min: 2, max: 3 }
+        }, 10);
+        TestRunner.assert('ボス武器が生成された', !!bossWeapon);
+        TestRunner.assert('ボス武器にUID', !!bossWeapon.uid);
+        TestRunner.assertEqual('ボス武器のスロット', bossWeapon.slot, 'weapon');
+        TestRunner.assertEqual('ボス武器のタイプ', bossWeapon.weaponType, 'katana');
+        TestRunner.assert('ボス武器のATK ≈ 100', bossWeapon.atk >= 90 && bossWeapon.atk <= 110);
+        TestRunner.assertRange('ボス武器のエンチャント数', bossWeapon.enchants.length, 2, 3);
+
+        // ボス防具生成
+        const bossArmor = Equipment.generateBossArmor({
+            baseName: 'テスト鎧', slot: 'body',
+            baseDEF: 50, baseHP: 100, chance: 1.0,
+            enchantSlots: { min: 1, max: 2 }
+        }, 10);
+        TestRunner.assert('ボス防具が生成された', !!bossArmor);
+        TestRunner.assertEqual('ボス防具のスロット', bossArmor.slot, 'body');
+        TestRunner.assert('ボス防具のDEF > 0', bossArmor.def > 0);
+        TestRunner.assert('ボス防具のHP > 0', bossArmor.hp > 0);
+
+        // ランダム装備生成
+        const randEquip = Equipment.generateRandomEquipment(10);
+        TestRunner.assert('ランダム装備生成成功', !!randEquip);
+        TestRunner.assert('ランダム装備にスロット', !!randEquip.slot);
+        TestRunner.assert('ランダム装備にレアリティ', !!randEquip.rarity);
+
+        // 装備の着脱
+        resetGameState();
+        const testWeapon = {
+            uid: 'eq_test_1', name: 'テスト刀', slot: 'weapon', weaponType: 'katana',
+            rarity: 'rare', atk: 100, def: 0, hp: 0, element: null,
+            enchants: [], enhanceLevel: 0, fixedEffect: null
+        };
+        GameState.inventory.equipment.push(testWeapon);
+        Equipment.equipItem(testWeapon);
+        TestRunner.assert('装備後に武器スロットに入る', GameState.equipped.weapon !== null);
+        TestRunner.assertEqual('装備後の武器名', GameState.equipped.weapon.name, 'テスト刀');
+        TestRunner.assertEqual('インベントリから除去', GameState.inventory.equipment.length, 0);
+
+        Equipment.unequipItem('weapon');
+        TestRunner.assertEqual('外した後の武器スロット', GameState.equipped.weapon, null);
+        TestRunner.assertEqual('インベントリに戻る', GameState.inventory.equipment.length, 1);
+
+        // 装備入れ替え
+        const weapon1 = { uid: 'w1', name: '武器1', slot: 'weapon', weaponType: 'katana', rarity: 'common', atk: 50, def: 0, hp: 0, element: null, enchants: [], enhanceLevel: 0, fixedEffect: null };
+        const weapon2 = { uid: 'w2', name: '武器2', slot: 'weapon', weaponType: 'bow', rarity: 'rare', atk: 80, def: 0, hp: 0, element: 'fire', enchants: [], enhanceLevel: 0, fixedEffect: null };
+        resetGameState();
+        GameState.inventory.equipment.push(weapon1);
+        GameState.inventory.equipment.push(weapon2);
+        Equipment.equipItem(weapon1);
+        Equipment.equipItem(weapon2);
+        TestRunner.assertEqual('入れ替え後の武器', GameState.equipped.weapon.name, '武器2');
+        TestRunner.assert('旧武器がインベントリに戻る', GameState.inventory.equipment.some(e => e.name === '武器1'));
+
+        // ==========================================
+        // 7. 式神システムテスト
+        // ==========================================
+        TestRunner.group('7. 式神システム');
+
+        resetGameState();
+
+        // 式神入手
+        Shikigami.obtainShikigami('kodama');
+        TestRunner.assert('式神入手成功', !!GameState.shikigami.owned['kodama']);
+        TestRunner.assertEqual('式神の初期レベル', GameState.shikigami.owned['kodama'].level, 1);
+
+        // 式神被り
+        Shikigami.obtainShikigami('kodama');
+        TestRunner.assert('被り時好感度増加', GameState.shikigami.owned['kodama'].affection > 0);
+
+        // パーティ編成
+        Shikigami.addToParty('kodama');
+        TestRunner.assertEqual('パーティスロット0に式神', GameState.shikigami.party[0], 'kodama');
+
+        // 重複編成チェック
+        const partyBefore = [...GameState.shikigami.party];
+        Shikigami.addToParty('kodama');
+        TestRunner.assertEqual('重複編成は拒否', GameState.shikigami.party[1], null);
+
+        // 経験値付与
+        Shikigami.addExp('kodama', 999999);
+        TestRunner.assert('式神レベルが上がる', GameState.shikigami.owned['kodama'].level > 1);
+        const maxLevel = SHIKIGAMI_DATA['kodama'].stars * 10;
+        TestRunner.assert('式神レベル上限チェック', GameState.shikigami.owned['kodama'].level <= maxLevel);
+
+        // パーティから外す
+        Shikigami.removeFromParty(0);
+        TestRunner.assertEqual('パーティから外す成功', GameState.shikigami.party[0], null);
+
+        // ==========================================
+        // 8. 鍛冶システムテスト
+        // ==========================================
+        TestRunner.group('8. 鍛冶システム');
+
+        resetGameState();
+
+        // クラフト可能チェック（素材不足）
+        const recipe = CRAFT_RECIPES['wooden_katana'];
+        TestRunner.assert('素材不足でクラフト不可', !Smithy.canCraft(recipe));
+
+        // 素材を用意してクラフト
+        GameState.player.gold = 10000;
+        GameState.inventory.materials['wood_shard'] = 10;
+        GameState.inventory.materials['spirit_wood'] = 5;
+        TestRunner.assert('素材充足でクラフト可能', Smithy.canCraft(recipe));
+
+        Smithy.craft('wooden_katana');
+        TestRunner.assert('クラフト後にインベントリに追加', GameState.inventory.equipment.length === 1);
+        TestRunner.assertEqual('クラフト品の名前', GameState.inventory.equipment[0].name, '木刀');
+        TestRunner.assert('ゴールドが減少', GameState.player.gold < 10000);
+        TestRunner.assert('素材が消費された', GameState.inventory.materials['wood_shard'] < 10);
+        TestRunner.assert('クラフトカウント増加', GameState.encyclopedia.craftCount >= 1);
+
+        // 強化テスト
+        const craftedItem = GameState.inventory.equipment[0];
+        const atkBefore = craftedItem.atk;
+        GameState.inventory.materials['enhance_stone'] = 100;
+        GameState.player.gold = 100000;
+        Smithy.enhance(craftedItem.uid);
+        // 強化は確率なので成功/失敗どちらでもOK
+        TestRunner.assert('強化処理が実行された（エラーなし）', true);
+
+        // 分解テスト
+        resetGameState();
+        const dismantleItem = {
+            uid: 'dis_test', name: '分解用武器', slot: 'weapon', weaponType: 'katana',
+            rarity: 'rare', atk: 100, def: 0, hp: 0, element: null,
+            enchants: [], enhanceLevel: 0, fixedEffect: null
+        };
+        GameState.inventory.equipment.push(dismantleItem);
+        const goldBeforeDismantle = GameState.player.gold;
+        Smithy.dismantle('dis_test');
+        TestRunner.assert('分解後ゴールド増加', GameState.player.gold > goldBeforeDismantle);
+        TestRunner.assertEqual('分解後インベントリから除去', GameState.inventory.equipment.length, 0);
+
+        // ==========================================
+        // 9. ガチャシステムテスト
+        // ==========================================
+        TestRunner.group('9. ガチャシステム');
+
+        resetGameState();
+
+        // 霊石ガチャ（コスト不足）
+        GameState.player.spiritStones = 5;
+        const shikiCountBefore = Object.keys(GameState.shikigami.owned).length;
+        Gacha.pullSpirit(1);
+        TestRunner.assertEqual('霊石不足でガチャ不可', Object.keys(GameState.shikigami.owned).length, shikiCountBefore);
+
+        // 霊石ガチャ（コスト充足）
+        GameState.player.spiritStones = 100;
+        Gacha.pullSpirit(1);
+        TestRunner.assertEqual('ガチャ後霊石減少', GameState.player.spiritStones, 90);
+        TestRunner.assert('ガチャ後式神を入手', Object.keys(GameState.shikigami.owned).length > 0);
+        TestRunner.assert('天井カウント増加', GameState.gachaPity.spirit > 0);
+
+        // 天井テスト
+        resetGameState();
+        GameState.player.spiritStones = 10000;
+        GameState.gachaPity.spirit = GACHA_TABLE.spirit.pity - 1;
+        Gacha.pullSpirit(1);
+        // ★5が天井で確定排出されるはず
+        const has5star = Object.entries(GameState.shikigami.owned).some(([id]) => SHIKIGAMI_DATA[id]?.stars === 5);
+        TestRunner.assert('天井で★5確定', has5star);
+        TestRunner.assertEqual('天井後カウントリセット', GameState.gachaPity.spirit, 0);
+
+        // ゴールドガチャ
+        resetGameState();
+        GameState.player.gold = 50000;
+        const invBefore = GameState.inventory.equipment.length;
+        Gacha.pullGold(1);
+        TestRunner.assert('ゴールドガチャ後にゴールド減少', GameState.player.gold < 50000);
+
+        // ==========================================
+        // 10. 闘技場テスト
+        // ==========================================
+        TestRunner.group('10. 闘技場');
+
+        resetGameState();
+
+        // 対戦相手生成
+        const opponent = Arena.generateOpponent(500);
+        TestRunner.assert('対戦相手生成成功', !!opponent);
+        TestRunner.assert('対戦相手にATK', opponent.atk > 0);
+        TestRunner.assert('対戦相手にHP', opponent.hp > 0);
+        TestRunner.assert('対戦相手に属性', !!opponent.element);
+
+        // 対戦
+        const rankBefore = GameState.arena.rank;
+        Arena.battle({ ...opponent, rank: rankBefore });
+        const totalBattles = GameState.arena.wins + GameState.arena.losses;
+        TestRunner.assertEqual('対戦後に勝敗カウント+1', totalBattles, 1);
+
+        // メダル交換
+        resetGameState();
+        GameState.arena.medals = 100;
+        Arena.exchangeMedals('spiritStones', 10, 50);
+        TestRunner.assertEqual('メダル交換後メダル減少', GameState.arena.medals, 50);
+        TestRunner.assertEqual('霊石増加', GameState.player.spiritStones, 60); // 50初期 + 10
+
+        // ==========================================
+        // 11. セーブ/ロードテスト
+        // ==========================================
+        TestRunner.group('11. セーブ/ロード');
+
+        resetGameState();
+        GameState.player.gold = 12345;
+        GameState.player.spiritStones = 67;
+
+        // セーブ
+        const saveResult = Save.save();
+        TestRunner.assert('セーブ成功', saveResult === true);
+        TestRunner.assert('セーブデータ存在確認', Save.hasSave());
+
+        // 状態変更後にロード
+        GameState.player.gold = 0;
+        GameState.player.spiritStones = 0;
+        const loadResult = Save.load();
+        TestRunner.assert('ロード成功', loadResult === true);
+        TestRunner.assertEqual('ロード後のゴールド復元', GameState.player.gold, 12345);
+        TestRunner.assertEqual('ロード後の霊石復元', GameState.player.spiritStones, 67);
+
+        // エクスポート/インポート
+        const exported = Save.exportSave();
+        TestRunner.assert('エクスポート成功', exported.length > 0);
+        GameState.player.gold = 0;
+        const importResult = Save.importSave(exported);
+        TestRunner.assert('インポート成功', importResult === true);
+        TestRunner.assertEqual('インポート後のゴールド復元', GameState.player.gold, 12345);
+
+        // クリーンアップ
+        Save.deleteSave();
+        TestRunner.assert('セーブ削除成功', !Save.hasSave());
+
+        // ==========================================
+        // 12. 図鑑・実績テスト
+        // ==========================================
+        TestRunner.group('12. 図鑑・実績');
+
+        resetGameState();
+
+        // 敵図鑑登録
+        GameState.encyclopedia.discoveredEnemies['forest_tanuki'] = true;
+        TestRunner.assert('敵図鑑登録', !!GameState.encyclopedia.discoveredEnemies['forest_tanuki']);
+
+        // 実績チェック - 初めての討伐
+        Encyclopedia.checkAllAchievements();
+        TestRunner.assert('「初めての討伐」実績達成', !!GameState.encyclopedia.achievements['first_kill']);
+
+        // 実績報酬（霊石）
+        TestRunner.assert('実績報酬の霊石増加', GameState.player.spiritStones > 50);
+
+        // ダンジョンクリア実績
+        GameState.player.clearedDungeons['forest'] = true;
+        Encyclopedia.checkAllAchievements();
+        TestRunner.assert('「森の守り手」実績達成', !!GameState.encyclopedia.achievements['clear_forest']);
+
+        // 式神収集実績
+        Shikigami.obtainShikigami('kodama');
+        Shikigami.obtainShikigami('hinotama_shiki');
+        Shikigami.obtainShikigami('kappa_shiki');
+        Encyclopedia.checkAllAchievements();
+        TestRunner.assert('「式神使い」実績達成', !!GameState.encyclopedia.achievements['shikigami_3']);
+
+        // ==========================================
+        // 13. 武器システムテスト
+        // ==========================================
+        TestRunner.group('13. 武器システム');
+
+        // 各武器タイプの初期化
+        for (const type of Object.keys(WEAPON_TYPES)) {
+            try {
+                Weapons.init(type);
+                TestRunner.assert(`武器[${type}] 初期化成功`, true);
+            } catch (e) {
+                TestRunner.assert(`武器[${type}] 初期化成功`, false, e.message);
+            }
+        }
+
+        // 刀コンボ
+        Weapons.init('katana');
+        TestRunner.assert('刀の初期コンボ = 0', Weapons.state.comboCount === 0);
+
+        // 弓チャージ
+        Weapons.init('bow');
+        TestRunner.assert('弓の初期チャージ状態 = false', Weapons.state.charging === false);
+
+        // 槍タイミング
+        Weapons.init('spear');
+        TestRunner.assert('槍のカーソル位置初期化', Weapons.state.cursorPos === 0);
+
+        // 拳連打
+        Weapons.init('fist');
+        TestRunner.assert('拳のクリック配列初期化', Array.isArray(Weapons.state.clicks));
+
+        // 杖パターン
+        Weapons.init('staff');
+        TestRunner.assert('杖のパターン生成', Weapons.state.pattern && Weapons.state.pattern.length > 0);
+
+        // 大槌ゲージ
+        Weapons.init('hammer');
+        TestRunner.assertEqual('大槌ゲージ初期値', Weapons.state.gauge, 0);
+
+        // ==========================================
+        // 14. サウンドシステムテスト
+        // ==========================================
+        TestRunner.group('14. サウンドシステム');
+
+        GameState.settings.soundEnabled = false;
+        try {
+            SoundManager.hit();
+            SoundManager.crit();
+            SoundManager.enemyDefeat();
+            SoundManager.bossAppear();
+            SoundManager.levelUp();
+            SoundManager.heal();
+            SoundManager.playerHit();
+            SoundManager.playerDeath();
+            SoundManager.gachaPull();
+            SoundManager.gachaRare();
+            TestRunner.assert('サウンド関数（無効時）全て呼び出し成功', true);
+        } catch (e) {
+            TestRunner.assert('サウンド関数（無効時）全て呼び出し成功', false, e.message);
+        }
+
+        // ==========================================
+        // 15. UI描画テスト
+        // ==========================================
+        TestRunner.group('15. UI描画');
+
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.currentDungeon = 'forest';
+        GameState.dungeon.playerHP = 100;
+        GameState.dungeon.playerMaxHP = 100;
+        GameState.dungeon.playerMP = 50;
+        GameState.dungeon.playerMaxMP = 50;
+        GameState.dungeon.playerLevel = 5;
+        GameState.dungeon.playerExp = 50;
+        GameState.dungeon.killCount = 3;
+        GameState.dungeon.killsRequired = 5;
+
+        try {
+            UI.updatePlayerBars();
+            TestRunner.assert('UI.updatePlayerBars() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updatePlayerBars() 成功', false, e.message);
+        }
+
+        try {
+            UI.updatePlayerStats();
+            TestRunner.assert('UI.updatePlayerStats() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updatePlayerStats() 成功', false, e.message);
+        }
+
+        try {
+            UI.updateKillCounter();
+            TestRunner.assert('UI.updateKillCounter() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updateKillCounter() 成功', false, e.message);
+        }
+
+        try {
+            UI.updateAcquiredSkills();
+            TestRunner.assert('UI.updateAcquiredSkills() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updateAcquiredSkills() 成功', false, e.message);
+        }
+
+        try {
+            UI.updateVillageSummary();
+            TestRunner.assert('UI.updateVillageSummary() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updateVillageSummary() 成功', false, e.message);
+        }
+
+        // 敵表示
+        GameState.dungeon.currentEnemies = [{
+            id: 'test', name: 'テスト', emoji: '👻', element: 'fire',
+            hp: 100, maxHP: 100, atk: 10, def: 5, position: 1, isBoss: false
+        }];
+        try {
+            UI.updateEnemyDisplay();
+            TestRunner.assert('UI.updateEnemyDisplay() 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.updateEnemyDisplay() 成功', false, e.message);
+        }
+
+        // インベントリ表示
+        try {
+            UI.renderInventory('equip');
+            TestRunner.assert('UI.renderInventory("equip") 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.renderInventory("equip") 成功', false, e.message);
+        }
+
+        try {
+            UI.renderInventory('materials');
+            TestRunner.assert('UI.renderInventory("materials") 成功', true);
+        } catch (e) {
+            TestRunner.assert('UI.renderInventory("materials") 成功', false, e.message);
+        }
+
+        // ==========================================
+        // 16. 画面遷移テスト
+        // ==========================================
+        TestRunner.group('16. 画面遷移');
+
+        try {
+            switchScreen('village');
+            TestRunner.assertEqual('村画面に遷移', GameState.screen, 'village');
+            switchScreen('battle');
+            TestRunner.assertEqual('戦闘画面に遷移', GameState.screen, 'battle');
+            switchScreen('smithy');
+            TestRunner.assertEqual('鍛冶画面に遷移', GameState.screen, 'smithy');
+        } catch (e) {
+            TestRunner.assert('画面遷移成功', false, e.message);
+        }
+
+        // モーダル
+        try {
+            openModal('levelup-modal');
+            TestRunner.assert('モーダル開く成功', document.getElementById('levelup-modal').classList.contains('active'));
+            closeModal('levelup-modal');
+            TestRunner.assert('モーダル閉じる成功', !document.getElementById('levelup-modal').classList.contains('active'));
+        } catch (e) {
+            TestRunner.assert('モーダル操作成功', false, e.message);
+        }
+
+        // ==========================================
+        // 17. 鍛冶画面描画テスト
+        // ==========================================
+        TestRunner.group('17. 鍛冶画面描画');
+
+        resetGameState();
+        try {
+            Smithy.currentTab = 'craft';
+            Smithy.render();
+            TestRunner.assert('鍛冶:作成タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('鍛冶:作成タブ描画成功', false, e.message);
+        }
+
+        try {
+            Smithy.currentTab = 'enhance';
+            Smithy.render();
+            TestRunner.assert('鍛冶:強化タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('鍛冶:強化タブ描画成功', false, e.message);
+        }
+
+        try {
+            Smithy.currentTab = 'reforge';
+            Smithy.render();
+            TestRunner.assert('鍛冶:錬成タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('鍛冶:錬成タブ描画成功', false, e.message);
+        }
+
+        try {
+            Smithy.currentTab = 'dismantle';
+            Smithy.render();
+            TestRunner.assert('鍛冶:分解タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('鍛冶:分解タブ描画成功', false, e.message);
+        }
+
+        // ==========================================
+        // 18. 図鑑画面描画テスト
+        // ==========================================
+        TestRunner.group('18. 図鑑画面描画');
+
+        resetGameState();
+        GameState.encyclopedia.discoveredEnemies['forest_tanuki'] = true;
+        Shikigami.obtainShikigami('kodama');
+        GameState.inventory.materials['wood_shard'] = 5;
+
+        try {
+            Encyclopedia.currentTab = 'enemies';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:妖怪タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:妖怪タブ描画成功', false, e.message);
+        }
+
+        try {
+            Encyclopedia.currentTab = 'bosses';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:ボスタブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:ボスタブ描画成功', false, e.message);
+        }
+
+        try {
+            Encyclopedia.currentTab = 'shikigami';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:式神タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:式神タブ描画成功', false, e.message);
+        }
+
+        try {
+            Encyclopedia.currentTab = 'equipment';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:装備タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:装備タブ描画成功', false, e.message);
+        }
+
+        try {
+            Encyclopedia.currentTab = 'materials';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:素材タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:素材タブ描画成功', false, e.message);
+        }
+
+        try {
+            Encyclopedia.currentTab = 'achievements';
+            Encyclopedia.renderTab();
+            TestRunner.assert('図鑑:実績タブ描画成功', true);
+        } catch (e) {
+            TestRunner.assert('図鑑:実績タブ描画成功', false, e.message);
+        }
+
+        // ==========================================
+        // 19. エッジケーステスト
+        // ==========================================
+        TestRunner.group('19. エッジケース');
+
+        // 倉庫上限テスト
+        resetGameState();
+        GameState.inventory.maxEquipSlots = 2;
+        GameState.inventory.equipment.push({ uid: 'e1', name: '装備1', slot: 'head', rarity: 'common', enchants: [] });
+        GameState.inventory.equipment.push({ uid: 'e2', name: '装備2', slot: 'body', rarity: 'common', enchants: [] });
+        const equipped3 = { uid: 'e3', name: '装備3', slot: 'feet', rarity: 'common', atk: 0, def: 10, hp: 0, element: null, enchants: [], enhanceLevel: 0, fixedEffect: null };
+        GameState.equipped.feet = equipped3;
+        Equipment.unequipItem('feet');
+        TestRunner.assert('倉庫がいっぱいの時は外せない', GameState.equipped.feet !== null);
+
+        // ゴールド0でのクラフト
+        resetGameState();
+        GameState.player.gold = 0;
+        TestRunner.assert('ゴールド0でクラフト不可', !Smithy.canCraft(CRAFT_RECIPES['wooden_katana']));
+
+        // 空の式神パーティでのステータス計算
+        resetGameState();
+        GameState.shikigami.party = [null, null, null];
+        try {
+            const emptyPartyStats = calculatePlayerStats();
+            TestRunner.assert('空パーティでステータス計算成功', emptyPartyStats.atk > 0);
+        } catch (e) {
+            TestRunner.assert('空パーティでステータス計算成功', false, e.message);
+        }
+
+        // 生存敵0での操作
+        resetGameState();
+        GameState.dungeon.active = true;
+        GameState.dungeon.currentEnemies = [];
+        try {
+            Combat.performClick(1.0);
+            TestRunner.assert('敵0体でクリック攻撃がエラーにならない', true);
+        } catch (e) {
+            TestRunner.assert('敵0体でクリック攻撃がエラーにならない', false, e.message);
+        }
+
+        // ==========================================
+        // 20. ダンジョン解放チェーン
+        // ==========================================
+        TestRunner.group('20. ダンジョン解放チェーン');
+
+        resetGameState();
+        const dungeonOrder = ['forest', 'shrine', 'cave', 'sea', 'thunder', 'dark', 'infinite'];
+
+        TestRunner.assert('初期: forestのみアンロック', Dungeon.isDungeonUnlocked('forest'));
+        for (let i = 1; i < dungeonOrder.length; i++) {
+            TestRunner.assert(`初期: ${dungeonOrder[i]}はロック`, !Dungeon.isDungeonUnlocked(dungeonOrder[i]));
+        }
+
+        // 順番にクリアしてアンロック確認
+        for (let i = 0; i < dungeonOrder.length - 1; i++) {
+            GameState.player.clearedDungeons[dungeonOrder[i]] = true;
+            TestRunner.assert(`${dungeonOrder[i]}クリア後: ${dungeonOrder[i+1]}がアンロック`,
+                Dungeon.isDungeonUnlocked(dungeonOrder[i+1])
+            );
+        }
+
+        // ===== 結果表示 =====
+        TestRunner.render();
+
+        // 状態クリーンアップ
+        resetGameState();
+        Save.deleteSave();
+    }
+
+    // テスト実行
+    runAllTests();
+    </script>
+</body>
+</html>

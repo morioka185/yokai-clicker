@@ -1,0 +1,13 @@
+name: yokai-clicker
+
+services:
+  app:
+    build: .
+    container_name: yokai-clicker
+    restart: unless-stopped
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

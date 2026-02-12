@@ -1,0 +1,820 @@
+/* ==========================================
+   アニメーション定義
+   ========================================== */
+
+@keyframes damageFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    50% { opacity: 1; transform: translateY(-40px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes enemyHit {
+    0% { filter: brightness(1); transform: scale(1); }
+    10% { filter: brightness(2); transform: scale(1.05); }
+    100% { filter: brightness(1); transform: scale(1); }
+}
+
+@keyframes enemyDeath {
+    0% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1); }
+    50% { opacity: 0.5; transform: scale(1.2) rotate(5deg); filter: brightness(3); }
+    100% { opacity: 0; transform: scale(0.5) rotate(-10deg); filter: brightness(0); }
+}
+
+@keyframes gachaReveal {
+    0% { opacity: 0; transform: scale(0.5) rotateY(180deg); }
+    60% { transform: scale(1.1) rotateY(0deg); }
+    100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+
+@keyframes titleGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+    50% { text-shadow: 0 0 40px rgba(139, 92, 246, 0.8), 0 0 60px rgba(217, 70, 239, 0.3); }
+}
+
+@keyframes particleFloat {
+    0% { opacity: 0; transform: translateY(100vh) rotate(0deg); }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-20vh) rotate(360deg); }
+}
+
+@keyframes critFlash {
+    0% { background: transparent; }
+    50% { background: rgba(245, 158, 11, 0.1); }
+    100% { background: transparent; }
+}
+
+@keyframes levelUpFlash {
+    0% { box-shadow: none; }
+    50% { box-shadow: inset 0 0 60px rgba(168, 85, 247, 0.3); }
+    100% { box-shadow: none; }
+}
+
+@keyframes enemyAppear {
+    0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+    60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* === Enemy Attack / Player Hit Effects === */
+
+/* Red vignette when player takes damage */
+@keyframes playerHitVignette {
+    0% { opacity: 0; background: radial-gradient(ellipse at center, transparent 30%, rgba(239, 68, 68, 0.35) 100%); }
+    15% { opacity: 1; }
+    100% { opacity: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(239, 68, 68, 0.2) 100%); }
+}
+
+/* Heavy hit vignette (>20% HP damage) */
+@keyframes playerHitVignetteHeavy {
+    0% { opacity: 0; background: radial-gradient(ellipse at center, rgba(255,23,68,0.1) 0%, rgba(255, 23, 68, 0.5) 100%); }
+    20% { opacity: 1; }
+    100% { opacity: 0; background: radial-gradient(ellipse at center, transparent 30%, rgba(255, 23, 68, 0.15) 100%); }
+}
+
+/* Enemy lunge toward player when attacking */
+@keyframes enemyLunge {
+    0% { transform: scale(1) translateY(0); }
+    25% { transform: scale(1.15) translateY(12px); }
+    50% { transform: scale(1.15) translateY(12px); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+/* HP bar flash on damage */
+@keyframes hpBarDamageFlash {
+    0% { filter: brightness(1); }
+    25% { filter: brightness(2.5) saturate(2); }
+    50% { filter: brightness(1.2); }
+    75% { filter: brightness(2) saturate(1.5); }
+    100% { filter: brightness(1); }
+}
+
+/* Player damage number float */
+@keyframes playerDamageFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1.2); }
+    20% { opacity: 1; transform: translateY(-8px) scale(1); }
+    100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
+}
+
+/* Hit effect class */
+.enemy-hit { animation: enemyHit 0.2s ease-out; }
+.enemy-death { animation: enemyDeath 0.5s ease-out forwards; }
+.screen-shake { animation: shake 0.3s ease-out; }
+.crit-flash { animation: critFlash 0.3s ease-out; }
+.levelup-flash { animation: levelUpFlash 1s ease-out; }
+
+/* Title particles */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    animation: particleFloat linear infinite;
+    pointer-events: none;
+}
+
+/* ==========================================
+   Mobile Animations
+   ========================================== */
+
+/* Tap ripple effect */
+@keyframes tapRipple {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* Panel slide up */
+@keyframes slideUpPanel {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Panel slide down (close) */
+@keyframes slideDownPanel {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+/* ==========================================
+   武器エフェクト - Weapon Attack Effects
+   ========================================== */
+
+/* --- 共通ベース --- */
+.wfx {
+    position: absolute;
+    pointer-events: none;
+    z-index: 6;
+}
+
+/* --- 刀 (Katana) - 斬撃ライン --- */
+@keyframes katanaSlash {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--angle)) scaleX(0);
+    }
+    15% {
+        opacity: 1;
+    }
+    35% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--angle)) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--angle)) scaleX(1.1);
+    }
+}
+
+@keyframes katanaSpark {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--dx), var(--dy)) scale(0.2);
+    }
+}
+
+.wfx-katana-slash {
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, rgba(200, 230, 255, 0.9) 30%, rgba(255, 255, 255, 1) 50%, rgba(200, 230, 255, 0.9) 70%, transparent 100%);
+    border-radius: 2px;
+    filter: drop-shadow(0 0 4px rgba(180, 210, 255, 0.6));
+    animation: katanaSlash 0.3s ease-out forwards;
+}
+
+.wfx-katana-slash.combo-strong {
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 200, 50, 0.9) 30%, rgba(255, 240, 150, 1) 50%, rgba(255, 200, 50, 0.9) 70%, transparent 100%);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.7));
+}
+
+.wfx-katana-slash.combo-max {
+    width: 140px;
+    height: 5px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 100, 100, 0.9) 20%, rgba(255, 220, 100, 1) 50%, rgba(255, 100, 100, 0.9) 80%, transparent 100%);
+    filter: drop-shadow(0 0 12px rgba(255, 100, 50, 0.8));
+}
+
+.wfx-katana-spark {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff;
+    filter: drop-shadow(0 0 3px rgba(255, 200, 100, 0.8));
+    animation: katanaSpark 0.4s ease-out forwards;
+}
+
+/* --- 弓 (Bow) - 矢の着弾 --- */
+@keyframes bowImpactRing {
+    0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.1);
+        border-width: 3px;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.8);
+        border-width: 1px;
+    }
+}
+
+@keyframes bowArrowTrail {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 40px) scaleY(0);
+    }
+    25% {
+        opacity: 0.9;
+        transform: translate(-50%, 0) scaleY(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -15px) scaleY(0.3);
+    }
+}
+
+@keyframes bowChargeRay {
+    0% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) rotate(var(--ray-angle)) scaleX(0);
+    }
+    30% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) rotate(var(--ray-angle)) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--ray-angle)) scaleX(1.3);
+    }
+}
+
+.wfx-bow-ring {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid rgba(100, 180, 255, 0.8);
+    animation: bowImpactRing 0.35s ease-out forwards;
+}
+
+.wfx-bow-ring.charged {
+    width: 70px;
+    height: 70px;
+    border-color: rgba(139, 92, 246, 0.9);
+    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5));
+}
+
+.wfx-bow-ring.full-charge {
+    width: 90px;
+    height: 90px;
+    border-color: rgba(245, 158, 11, 0.95);
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.7));
+}
+
+.wfx-bow-trail {
+    width: 3px;
+    height: 40px;
+    background: linear-gradient(180deg, transparent, rgba(100, 180, 255, 0.8), rgba(200, 230, 255, 0.6));
+    border-radius: 2px;
+    transform-origin: bottom center;
+    animation: bowArrowTrail 0.3s ease-out forwards;
+}
+
+.wfx-bow-trail.charged {
+    height: 55px;
+    background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.8), rgba(180, 140, 255, 0.6));
+}
+
+.wfx-bow-trail.full-charge {
+    height: 70px;
+    width: 4px;
+    background: linear-gradient(180deg, transparent, rgba(245, 158, 11, 0.9), rgba(255, 220, 100, 0.7));
+}
+
+.wfx-bow-ray {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.8), transparent);
+    border-radius: 1px;
+    animation: bowChargeRay 0.4s ease-out forwards;
+}
+
+/* --- 槍 (Spear) - 突き --- */
+@keyframes spearThrust {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 20px) scaleY(0);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, 0) scaleY(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -25px) scaleY(0.7);
+    }
+}
+
+@keyframes spearBurst {
+    0% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.2);
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+}
+
+@keyframes spearPerfectRing {
+    0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.3);
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+        box-shadow: 0 0 0px rgba(245, 158, 11, 0), inset 0 0 0px rgba(245, 158, 11, 0);
+    }
+}
+
+.wfx-spear-thrust {
+    width: 4px;
+    height: 70px;
+    border-radius: 2px;
+    transform-origin: bottom center;
+    animation: spearThrust 0.35s ease-out forwards;
+}
+
+.wfx-spear-thrust.perfect {
+    background: linear-gradient(180deg, transparent, rgba(245, 190, 50, 0.9), rgba(255, 240, 150, 1));
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+}
+
+.wfx-spear-thrust.great {
+    background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.8), rgba(150, 255, 180, 0.9));
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.5));
+}
+
+.wfx-spear-thrust.good {
+    background: linear-gradient(180deg, transparent, rgba(200, 200, 220, 0.7), rgba(230, 230, 240, 0.8));
+}
+
+.wfx-spear-thrust.miss {
+    background: linear-gradient(180deg, transparent, rgba(150, 100, 100, 0.5), rgba(180, 130, 130, 0.4));
+}
+
+.wfx-spear-burst {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    animation: spearBurst 0.3s ease-out forwards;
+}
+
+.wfx-spear-burst.perfect {
+    background: radial-gradient(circle, rgba(255, 240, 150, 0.8), rgba(245, 158, 11, 0.4), transparent);
+}
+
+.wfx-spear-burst.great {
+    background: radial-gradient(circle, rgba(150, 255, 180, 0.7), rgba(34, 197, 94, 0.3), transparent);
+}
+
+.wfx-spear-burst.good {
+    background: radial-gradient(circle, rgba(220, 220, 240, 0.5), transparent);
+}
+
+.wfx-spear-perfect-ring {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(245, 158, 11, 0.8);
+    animation: spearPerfectRing 0.5s ease-out forwards;
+}
+
+/* --- 拳 (Fist) - 衝撃波 --- */
+@keyframes fistShockwave {
+    0% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.15);
+        border-width: 3px;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(var(--shock-scale, 1.8));
+        border-width: 1px;
+    }
+}
+
+@keyframes fistSpeedLine {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(8px) scaleX(0);
+    }
+    20% {
+        opacity: 0.8;
+    }
+    40% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(12px) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(35px) scaleX(0.6);
+    }
+}
+
+@keyframes fistImpactFlash {
+    0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+.wfx-fist-shockwave {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 150, 50, 0.7);
+    animation: fistShockwave 0.35s ease-out forwards;
+}
+
+.wfx-fist-shockwave.rank-normal {
+    border-color: rgba(180, 180, 190, 0.6);
+}
+
+.wfx-fist-shockwave.rank-shippuu {
+    border-color: rgba(76, 175, 80, 0.7);
+    filter: drop-shadow(0 0 4px rgba(76, 175, 80, 0.4));
+}
+
+.wfx-fist-shockwave.rank-renki {
+    border-color: rgba(255, 152, 0, 0.8);
+    filter: drop-shadow(0 0 6px rgba(255, 152, 0, 0.5));
+}
+
+.wfx-fist-shockwave.rank-musou {
+    border-color: rgba(255, 23, 68, 0.9);
+    filter: drop-shadow(0 0 8px rgba(255, 23, 68, 0.6));
+}
+
+.wfx-fist-speed-line {
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 200, 150, 0.8), transparent);
+    border-radius: 1px;
+    transform-origin: left center;
+    animation: fistSpeedLine 0.3s ease-out forwards;
+}
+
+.wfx-fist-speed-line.rank-shippuu {
+    background: linear-gradient(90deg, rgba(150, 255, 150, 0.8), transparent);
+}
+
+.wfx-fist-speed-line.rank-renki {
+    width: 35px;
+    background: linear-gradient(90deg, rgba(255, 200, 80, 0.9), transparent);
+}
+
+.wfx-fist-speed-line.rank-musou {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(255, 100, 100, 0.9), transparent);
+}
+
+.wfx-fist-flash {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(255, 200, 100, 0.4), transparent);
+    animation: fistImpactFlash 0.2s ease-out forwards;
+}
+
+/* --- 杖 (Staff) - 魔法陣 --- */
+@keyframes staffMagicCircle {
+    0% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.4) rotate(180deg);
+    }
+}
+
+@keyframes staffSparkle {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+        opacity: 0.9;
+        transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--ex)), calc(-50% + var(--ey))) scale(0.2);
+    }
+}
+
+@keyframes staffRuneGlow {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+        filter: blur(2px);
+    }
+    30% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.1);
+        filter: blur(3px);
+    }
+}
+
+.wfx-staff-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(139, 92, 246, 0.7);
+    box-shadow: inset 0 0 15px rgba(217, 70, 239, 0.3), 0 0 8px rgba(139, 92, 246, 0.4);
+    animation: staffMagicCircle 0.5s ease-out forwards;
+}
+
+.wfx-staff-circle.complete {
+    width: 80px;
+    height: 80px;
+    border-color: rgba(245, 158, 11, 0.9);
+    box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.4), 0 0 15px rgba(245, 158, 11, 0.6);
+}
+
+.wfx-staff-sparkle {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(200, 160, 255, 0.9);
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.7));
+    animation: staffSparkle 0.5s ease-out forwards;
+}
+
+.wfx-staff-sparkle.complete {
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 220, 100, 0.95);
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.8));
+}
+
+.wfx-staff-rune {
+    font-size: 16px;
+    color: rgba(180, 140, 255, 0.9);
+    text-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+    animation: staffRuneGlow 0.6s ease-out forwards;
+}
+
+.wfx-staff-rune.complete {
+    font-size: 22px;
+    color: rgba(255, 220, 100, 0.95);
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+}
+
+/* --- 大槌 (Hammer) - 地面叩きつけ --- */
+@keyframes hammerSmashRing {
+    0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.08);
+        border-width: 5px;
+    }
+    30% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.6);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(var(--ring-scale, 2));
+        border-width: 1px;
+    }
+}
+
+@keyframes hammerCrackLine {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--crack-angle)) scaleY(0);
+    }
+    25% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) rotate(var(--crack-angle)) scaleY(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--crack-angle)) scaleY(1);
+    }
+}
+
+@keyframes hammerDebris {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--deb-x), var(--deb-y)) scale(0.3);
+    }
+}
+
+@keyframes hammerGroundWave {
+    0% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scaleX(0.2) scaleY(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scaleX(3) scaleY(0.8);
+    }
+}
+
+.wfx-hammer-ring {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 5px solid rgba(239, 68, 68, 0.7);
+    animation: hammerSmashRing 0.5s ease-out forwards;
+}
+
+.wfx-hammer-ring.just {
+    width: 100px;
+    height: 100px;
+    border-color: rgba(245, 158, 11, 0.95);
+    filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.7));
+}
+
+.wfx-hammer-ring.near {
+    width: 80px;
+    height: 80px;
+    border-color: rgba(34, 197, 94, 0.8);
+    filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.4));
+}
+
+.wfx-hammer-ring.miss {
+    width: 50px;
+    height: 50px;
+    border-color: rgba(150, 150, 160, 0.5);
+}
+
+.wfx-hammer-crack {
+    width: 3px;
+    height: var(--crack-length, 40px);
+    background: linear-gradient(180deg, rgba(255, 200, 100, 0.8), rgba(200, 100, 50, 0.4), transparent);
+    border-radius: 1px;
+    transform-origin: top center;
+    animation: hammerCrackLine 0.5s ease-out forwards;
+}
+
+.wfx-hammer-crack.just {
+    width: 4px;
+    background: linear-gradient(180deg, rgba(255, 240, 150, 0.95), rgba(245, 158, 11, 0.6), transparent);
+    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.5));
+}
+
+.wfx-hammer-debris {
+    width: 5px;
+    height: 5px;
+    border-radius: 2px;
+    background: rgba(180, 140, 100, 0.8);
+    animation: hammerDebris 0.45s ease-out forwards;
+}
+
+.wfx-hammer-debris.just {
+    background: rgba(255, 200, 80, 0.9);
+    filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
+}
+
+.wfx-hammer-ground {
+    width: 100px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(200, 150, 80, 0.4), transparent);
+    animation: hammerGroundWave 0.4s ease-out forwards;
+}
+
+.wfx-hammer-ground.just {
+    width: 140px;
+    height: 30px;
+    background: radial-gradient(ellipse, rgba(245, 200, 100, 0.5), transparent);
+}
+
+/* ==========================================
+   式神・属性エフェクト
+   ========================================== */
+
+/* 属性相性テキスト浮遊 */
+@keyframes effectivenessFloat {
+    0% { opacity: 0; transform: translateY(0) scale(0.7); }
+    15% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+    30% { opacity: 1; transform: translateY(-16px) scale(1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
+}
+
+/* 式神スキル名浮遊 */
+@keyframes skillLabelFloat {
+    0% { opacity: 0; transform: translateY(10px) scale(0.8); }
+    12% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+    25% { opacity: 1; transform: translateY(-10px) scale(1); }
+    70% { opacity: 0.8; transform: translateY(-25px); }
+    100% { opacity: 0; transform: translateY(-45px); }
+}
+
+/* 式神攻撃エフェクト共通パルス */
+@keyframes shikiFxPulse {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    25% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+
+/* 水の波紋 */
+@keyframes shikiFxRipple {
+    0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.2); border-width: 3px; }
+    40% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); border-width: 1px; }
+}
+
+/* 雷のフリッカー */
+@keyframes shikiFxFlicker {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    25% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+    35% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+}
+
+/* 木の回転 */
+@keyframes shikiFxSpin {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+    30% { opacity: 0.8; transform: translate(-50%, -50%) scale(1) rotate(90deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(270deg); }
+}
+
+/* AoE全体エフェクト */
+@keyframes shikiAoeSweep {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ヒールエフェクト */
+@keyframes shikiHealGlow {
+    0% { opacity: 0; }
+    25% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* 式神スロット発動フラッシュ */
+@keyframes shikiSlotFlash {
+    0% { background: rgba(255,255,255,0.3); }
+    30% { background: rgba(255,255,255,0.15); }
+    100% { background: transparent; }
+}

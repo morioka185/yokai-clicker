@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"C:\\\\Users\\\\korod\\\\OneDrive\\\\Desktop\\\\AI\\\\ハクスラクリッカー\\\\index.html\")"
+    ]
+  }
+}

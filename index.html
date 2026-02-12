@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>妖怪退魔録 〜無限百鬼夜行〜</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div id="app">
+        <!-- ===== タイトル画面 ===== -->
+        <div id="title-screen" class="screen active">
+            <div class="title-bg">
+                <div class="title-particles" id="title-particles"></div>
+                <div class="title-content">
+                    <h1 class="title-text">
+                        <span class="title-sub">無限百鬼夜行</span>
+                        <span class="title-main">妖怪退魔録</span>
+                    </h1>
+                    <div class="title-menu">
+                        <button class="btn btn-primary btn-lg" id="btn-new-game">新しき旅へ</button>
+                        <button class="btn btn-secondary btn-lg" id="btn-load-game" style="display:none;">続きから</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 拠点画面 ===== -->
+        <div id="village-screen" class="screen">
+            <div class="village-header">
+                <div class="village-title">⛩️ 退魔の里</div>
+                <div class="player-summary" id="village-player-summary"></div>
+            </div>
+            <div class="village-grid">
+                <button class="village-btn" data-location="dungeon">
+                    <span class="village-icon">🗺️</span>
+                    <span class="village-label">ダンジョン</span>
+                    <span class="village-desc">妖怪討伐に出発</span>
+                </button>
+                <button class="village-btn" data-location="smithy">
+                    <span class="village-icon">⚔️</span>
+                    <span class="village-label">鍛冶屋</span>
+                    <span class="village-desc">装備の作成・強化</span>
+                </button>
+                <button class="village-btn" data-location="shikigami">
+                    <span class="village-icon">🦊</span>
+                    <span class="village-label">式神堂</span>
+                    <span class="village-desc">式神の管理・育成</span>
+                </button>
+                <button class="village-btn" data-location="inventory">
+                    <span class="village-icon">📦</span>
+                    <span class="village-label">倉庫</span>
+                    <span class="village-desc">装備・素材の管理</span>
+                </button>
+                <button class="village-btn" data-location="shop">
+                    <span class="village-icon">🏪</span>
+                    <span class="village-label">商店</span>
+                    <span class="village-desc">アイテムの売買</span>
+                </button>
+                <button class="village-btn" data-location="shrine">
+                    <span class="village-icon">⛩️</span>
+                    <span class="village-label">神社</span>
+                    <span class="village-desc">転生・悟り強化</span>
+                </button>
+                <button class="village-btn" data-location="gacha">
+                    <span class="village-icon">🎴</span>
+                    <span class="village-label">召喚所</span>
+                    <span class="village-desc">ガチャ・召喚</span>
+                </button>
+                <button class="village-btn" data-location="arena">
+                    <span class="village-icon">🏟️</span>
+                    <span class="village-label">闘技場</span>
+                    <span class="village-desc">対戦・ランキング</span>
+                </button>
+                <button class="village-btn" data-location="encyclopedia">
+                    <span class="village-icon">📖</span>
+                    <span class="village-label">図鑑</span>
+                    <span class="village-desc">妖怪・実績</span>
+                </button>
+                <button class="village-btn" data-location="settings">
+                    <span class="village-icon">⚙️</span>
+                    <span class="village-label">設定</span>
+                    <span class="village-desc">セーブ・設定</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== ダンジョン選択画面 ===== -->
+        <div id="dungeon-select-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village">← 里に戻る</button>
+                <h2>ダンジョン選択</h2>
+            </div>
+            <div class="dungeon-list" id="dungeon-list"></div>
+        </div>
+
+        <!-- ===== メイン戦闘画面 ===== -->
+        <div id="battle-screen" class="screen">
+            <!-- 上部ステータスバー -->
+            <div class="battle-header">
+                <div class="floor-info">
+                    <span id="dungeon-name">初心者の森</span>
+                    <span id="floor-display">B1F</span>
+                </div>
+                <div class="player-bars">
+                    <div class="bar-group">
+                        <span class="bar-label">HP</span>
+                        <div class="bar hp-bar"><div class="bar-fill" id="player-hp-bar"></div><span class="bar-text" id="player-hp-text"></span></div>
+                    </div>
+                    <div class="bar-group">
+                        <span class="bar-label">MP</span>
+                        <div class="bar mp-bar"><div class="bar-fill" id="player-mp-bar"></div><span class="bar-text" id="player-mp-text"></span></div>
+                    </div>
+                    <div class="bar-group">
+                        <span class="bar-label">EXP</span>
+                        <div class="bar exp-bar"><div class="bar-fill" id="player-exp-bar"></div><span class="bar-text" id="player-exp-text"></span></div>
+                    </div>
+                </div>
+                <div class="resource-bar">
+                    <span class="resource">Lv.<span id="player-level">1</span></span>
+                    <span class="resource">💰<span id="gold-display">0</span></span>
+                    <span class="resource">💎<span id="spirit-stone-display">0</span></span>
+                </div>
+            </div>
+
+            <!-- メインバトルエリア -->
+            <div class="battle-main">
+                <!-- 左パネル: キャラ情報 -->
+                <div class="battle-left-panel">
+                    <div class="player-info-panel">
+                        <h3>退魔師</h3>
+                        <div class="stat-list" id="player-stats"></div>
+                        <div class="weapon-info" id="current-weapon-info"></div>
+                    </div>
+                    <div class="shikigami-panel" id="shikigami-party"></div>
+                </div>
+
+                <!-- 中央: バトルエリア -->
+                <div class="battle-center">
+                    <div class="enemy-area" id="enemy-area">
+                        <div class="enemy-wave" id="enemy-wave">
+                            <!-- 敵スロットはJS(UI.updateEnemyDisplay)で動的生成 -->
+                        </div>
+                        <div class="click-area-overlay" id="click-area">
+                            <div class="zone-indicator"></div>
+                            <div class="zone-indicator"></div>
+                        </div>
+                        <div class="damage-numbers" id="damage-numbers"></div>
+                    </div>
+
+                    <!-- 武器別UI -->
+                    <div class="weapon-ui" id="weapon-ui"></div>
+
+                    <!-- 進行カウンター -->
+                    <div class="floor-progress">
+                        <div class="kill-counter">討伐: <span id="kill-count">0</span>/<span id="kill-required">5</span></div>
+                    </div>
+                </div>
+
+                <!-- 右パネル: タブ切替 -->
+                <div class="battle-right-panel" id="battle-right-panel">
+                    <button class="mobile-panel-close" id="btn-close-panel">&times;</button>
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="skills">技</button>
+                        <button class="tab-btn" data-tab="equipment">装備</button>
+                        <button class="tab-btn" data-tab="items">道具</button>
+                        <button class="tab-btn" data-tab="log">記録</button>
+                    </div>
+                    <div class="tab-content" id="tab-content">
+                        <div class="tab-pane active" id="tab-skills"></div>
+                        <div class="tab-pane" id="tab-equipment"></div>
+                        <div class="tab-pane" id="tab-items"></div>
+                        <div class="tab-pane" id="tab-log"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 階層遷移オーバーレイ -->
+            <div class="floor-transition" id="floor-transition">
+                <div class="floor-transition-content">
+                    <div class="floor-transition-line" id="floor-transition-line"></div>
+                    <div class="floor-transition-floor" id="floor-transition-text"></div>
+                    <div class="floor-transition-subtitle" id="floor-transition-subtitle"></div>
+                    <div class="floor-transition-line" id="floor-transition-line2"></div>
+                </div>
+            </div>
+
+            <!-- 被ダメージオーバーレイ -->
+            <div class="player-hit-overlay" id="player-hit-overlay"></div>
+
+            <!-- モバイルパネルバックドロップ -->
+            <div class="mobile-panel-backdrop" id="mobile-panel-backdrop"></div>
+
+            <!-- 下部コントロール -->
+            <div class="battle-footer">
+                <div class="battle-controls">
+                    <button class="btn btn-sm mobile-info-toggle" id="btn-mobile-info">📋</button>
+                    <button class="btn btn-sm" id="btn-auto-toggle">自動攻撃: OFF</button>
+                    <button class="btn btn-sm btn-danger" id="btn-retreat">撤退</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== レベルアップ選択モーダル ===== -->
+        <div id="levelup-modal" class="modal">
+            <div class="modal-content levelup-content">
+                <h2 class="levelup-title">🔺 Level Up!</h2>
+                <p class="levelup-subtitle" id="levelup-hint">スキルを一つ選択せよ</p>
+                <div class="levelup-choices" id="levelup-choices"></div>
+            </div>
+        </div>
+
+        <!-- ===== ドロップ表示モーダル ===== -->
+        <div id="drop-modal" class="modal">
+            <div class="modal-content drop-content">
+                <h2>💀 討伐報酬</h2>
+                <div class="drop-list" id="drop-list"></div>
+                <button class="btn btn-primary" id="btn-close-drop">閉じる</button>
+            </div>
+        </div>
+
+        <!-- ===== ダンジョン結果モーダル ===== -->
+        <div id="result-modal" class="modal">
+            <div class="modal-content result-content">
+                <h2 id="result-title"></h2>
+                <div id="result-details"></div>
+                <button class="btn btn-primary" id="btn-result-ok">里に戻る</button>
+            </div>
+        </div>
+
+        <!-- ===== 鍛冶画面 ===== -->
+        <div id="smithy-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-smithy">← 里に戻る</button>
+                <h2>⚔️ 鍛冶屋</h2>
+            </div>
+            <div class="smithy-tabs">
+                <button class="smithy-tab active" data-smithy="craft">作成</button>
+                <button class="smithy-tab" data-smithy="enhance">強化</button>
+                <button class="smithy-tab" data-smithy="reforge">錬成</button>
+                <button class="smithy-tab" data-smithy="evolve">進化</button>
+                <button class="smithy-tab" data-smithy="dismantle">分解</button>
+            </div>
+            <div class="smithy-content" id="smithy-content"></div>
+        </div>
+
+        <!-- ===== インベントリ画面 ===== -->
+        <div id="inventory-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-inv">← 里に戻る</button>
+                <h2>📦 倉庫</h2>
+            </div>
+            <div class="inventory-tabs">
+                <button class="inv-tab active" data-inv="equip">装備</button>
+                <button class="inv-tab" data-inv="materials">素材</button>
+            </div>
+            <div class="inventory-content" id="inventory-content"></div>
+        </div>
+
+        <!-- ===== 式神画面 ===== -->
+        <div id="shikigami-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-shiki">← 里に戻る</button>
+                <h2>🦊 式神堂</h2>
+            </div>
+            <div class="shikigami-content" id="shikigami-content"></div>
+        </div>
+
+        <!-- ===== ガチャ画面 ===== -->
+        <div id="gacha-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-gacha">← 里に戻る</button>
+                <h2>🎴 召喚所</h2>
+            </div>
+            <div class="gacha-content" id="gacha-content"></div>
+        </div>
+
+        <!-- ===== 闘技場画面 ===== -->
+        <div id="arena-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-arena">← 里に戻る</button>
+                <h2>🏟️ 闘技場</h2>
+            </div>
+            <div class="arena-content" id="arena-content"></div>
+        </div>
+
+        <!-- ===== 図鑑画面 ===== -->
+        <div id="encyclopedia-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-enc">← 里に戻る</button>
+                <h2>📖 図鑑</h2>
+            </div>
+            <div class="enc-tabs">
+                <button class="enc-tab active" data-enc="enemies">妖怪図鑑</button>
+                <button class="enc-tab" data-enc="bosses">ボス図鑑</button>
+                <button class="enc-tab" data-enc="shikigami">式神図鑑</button>
+                <button class="enc-tab" data-enc="equipment">装備図鑑</button>
+                <button class="enc-tab" data-enc="materials">素材図鑑</button>
+                <button class="enc-tab" data-enc="achievements">実績</button>
+            </div>
+            <div class="enc-summary" id="enc-summary"></div>
+            <div class="enc-content" id="enc-content"></div>
+        </div>
+
+        <!-- ===== 設定画面 ===== -->
+        <div id="settings-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-settings">← 里に戻る</button>
+                <h2>⚙️ 設定</h2>
+            </div>
+            <div class="settings-content" id="settings-content"></div>
+        </div>
+
+        <!-- 通知 -->
+        <div id="notification-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data/enemies.js"></script>
+    <script src="js/data/equipment.js"></script>
+    <script src="js/data/skills.js"></script>
+    <script src="js/data/shikigami.js"></script>
+    <script src="js/data/dungeons.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/weapons.js"></script>
+    <script src="js/dungeon.js"></script>
+    <script src="js/equipment.js"></script>
+    <script src="js/shikigami.js"></script>
+    <script src="js/smithy.js"></script>
+    <script src="js/gacha.js"></script>
+    <script src="js/arena.js"></script>
+    <script src="js/encyclopedia.js"></script>
+    <script src="js/save.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
