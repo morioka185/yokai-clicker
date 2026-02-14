@@ -502,8 +502,8 @@
         // ダメージ計算
         const stats = calculatePlayerStats();
         const testEnemy = alive[0];
-        const damage = Combat.calculateDamage(stats, testEnemy, 1.0);
-        TestRunner.assert('ダメージ計算 > 0', damage > 0, `damage: ${damage}`);
+        const dmgResult = Combat.calculateDamage(stats, testEnemy, 1.0);
+        TestRunner.assert('ダメージ計算 > 0', dmgResult.damage > 0, `damage: ${dmgResult.damage}`);
 
         // クリック攻撃
         const hpBefore = testEnemy.hp;

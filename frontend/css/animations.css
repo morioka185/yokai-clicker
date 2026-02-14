@@ -752,69 +752,196 @@
 
 /* 属性相性テキスト浮遊 */
 @keyframes effectivenessFloat {
-    0% { opacity: 0; transform: translateY(0) scale(0.7); }
-    15% { opacity: 1; transform: translateY(-10px) scale(1.1); }
-    30% { opacity: 1; transform: translateY(-16px) scale(1); }
-    100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    12% { opacity: 1; transform: translateY(-12px) scale(1.3); }
+    25% { opacity: 1; transform: translateY(-18px) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.7); }
 }
 
 /* 式神スキル名浮遊 */
 @keyframes skillLabelFloat {
-    0% { opacity: 0; transform: translateY(10px) scale(0.8); }
-    12% { opacity: 1; transform: translateY(-5px) scale(1.05); }
-    25% { opacity: 1; transform: translateY(-10px) scale(1); }
-    70% { opacity: 0.8; transform: translateY(-25px); }
-    100% { opacity: 0; transform: translateY(-45px); }
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.6); }
+    10% { opacity: 1; transform: translateX(-50%) translateY(-8px) scale(1.1); }
+    20% { opacity: 1; transform: translateX(-50%) translateY(-12px) scale(1); }
+    65% { opacity: 0.9; transform: translateX(-50%) translateY(-28px); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-50px); }
 }
 
 /* 式神攻撃エフェクト共通パルス */
 @keyframes shikiFxPulse {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
-    25% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.15); }
+    20% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.1); }
+    40% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.95); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
 }
 
-/* 水の波紋 */
+/* 炎の爆発 - 2段階膨張 */
+@keyframes shikiFxFire {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    25% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.9); }
+    40% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.05); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); filter: brightness(0.5); }
+}
+
+/* 水の波紋 - 二重リング */
 @keyframes shikiFxRipple {
-    0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.2); border-width: 3px; }
-    40% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); border-width: 1px; }
+    0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.15); border-width: 4px; }
+    30% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+    60% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.5); border-width: 2px; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); border-width: 1px; }
 }
 
-/* 雷のフリッカー */
+/* 雷のフリッカー - 激しい明滅 */
 @keyframes shikiFxFlicker {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    25% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
-    35% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-    50% { opacity: 0.5; }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); filter: brightness(1); }
+    10% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); filter: brightness(2); }
+    18% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.85); filter: brightness(0.8); }
+    28% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); filter: brightness(2.5); }
+    40% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+    50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.8); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); filter: brightness(0.5); }
 }
 
-/* 木の回転 */
+/* 土の衝撃 - 地響き */
+@keyframes shikiFxEarth {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.1) scaleY(0.5); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) scaleY(1.1); }
+    25% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.95) scaleY(0.85); }
+    40% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.05) scaleY(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.7) scaleY(0.8); }
+}
+
+/* 木の回転旋風 */
 @keyframes shikiFxSpin {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
-    30% { opacity: 0.8; transform: translate(-50%, -50%) scale(1) rotate(90deg); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(270deg); }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.15) rotate(0deg); }
+    20% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1) rotate(120deg); }
+    50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1) rotate(240deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8) rotate(420deg); }
 }
 
-/* AoE全体エフェクト */
+/* デバフ - 渦巻き収縮 */
+@keyframes shikiFxDebuff {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(0deg); }
+    20% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.8) rotate(60deg); }
+    40% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(120deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(270deg); }
+}
+
+/* AoE全体エフェクト - ウェーブ展開 */
 @keyframes shikiAoeSweep {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    100% { opacity: 0; }
+    0% { opacity: 0; transform: scale(0.8); }
+    15% { opacity: 1; transform: scale(1); }
+    40% { opacity: 0.8; }
+    100% { opacity: 0; transform: scale(1.05); }
 }
 
-/* ヒールエフェクト */
+/* ヒールエフェクト - 下からの光柱 */
 @keyframes shikiHealGlow {
-    0% { opacity: 0; }
-    25% { opacity: 1; }
-    100% { opacity: 0; }
+    0% { opacity: 0; transform: translateY(10px); }
+    20% { opacity: 1; transform: translateY(0); }
+    60% { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-5px); }
 }
 
 /* 式神スロット発動フラッシュ */
 @keyframes shikiSlotFlash {
-    0% { background: rgba(255,255,255,0.3); }
-    30% { background: rgba(255,255,255,0.15); }
-    100% { background: transparent; }
+    0% { background: rgba(255,255,255,0.4); transform: scale(1.05); }
+    25% { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+    100% { background: transparent; transform: scale(1); }
+}
+
+/* ==========================================
+   プレイヤー属性ヒットエフェクト
+   ========================================== */
+
+/* 属性リング拡大 */
+@keyframes elemHitRing {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* 属性パーティクル飛散 */
+@keyframes elemParticle {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(0.3); }
+}
+
+/* 有利属性の大フラッシュ */
+@keyframes elemSuperFlash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    30% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+}
+
+/* ==========================================
+   パワーティア ヒットエフェクト アニメーション
+   ========================================== */
+
+/* インパクトリング拡大 */
+@keyframes powerRingExpand {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+
+/* スピードライン射出 */
+@keyframes powerSpeedLine {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(8px) scaleX(0);
+    }
+    20% { opacity: 0.9; }
+    40% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(20px) scaleX(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--line-angle)) translateX(45px) scaleX(0.5);
+    }
+}
+
+/* 背景パルス */
+@keyframes powerBgPulse {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* クリティカルバースト */
+@keyframes critBurstAnim {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    30% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.95); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* ==========================================
+   撃破エフェクト アニメーション
+   ========================================== */
+
+/* 撃破バースト拡大 */
+@keyframes defeatBurstAnim {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    30% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.95); }
+    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+}
+
+/* 撃破スクリーンフラッシュ */
+@keyframes defeatFlashAnim {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* 撃破十字衝撃波 */
+@keyframes defeatCrossWave {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--wave-angle)) scaleX(0); }
+    20% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--wave-angle)) scaleX(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--wave-angle)) scaleX(1.5); }
 }

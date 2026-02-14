@@ -1,13 +1,57 @@
 name: yokai-clicker
 
 services:
-  app:
-    build: .
-    container_name: yokai-clicker
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: yokai-clicker-frontend
     restart: unless-stopped
-    networks:
-      - web
+    depends_on: [backend]
+    networks: [web, internal]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: yokai-clicker-backend
+    restart: unless-stopped
+    environment:
+      - DB_HOST=yokai-clicker-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=yokai_clicker
+      - JWT_SECRET=yokai-taimairoku-jwt-secret-change-in-production
+      - PORT=3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+
+  db:
+    image: postgres:15-alpine
+    container_name: yokai-clicker-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=yokai_clicker
+    volumes:
+      - yokai_clicker_data:/var/lib/postgresql/data
+      - ./backend/db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks: [internal]
+
+volumes:
+  yokai_clicker_data:
 
 networks:
   web:
     external: true
+  internal:
+    driver: bridge

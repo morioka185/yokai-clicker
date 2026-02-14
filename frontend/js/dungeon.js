@@ -67,7 +67,6 @@ const Dungeon = {
         d.killCount = 0;
         d.killsRequired = dungeon.killsPerFloor;
         d.floorCleared = false;
-        d.autoAttack = false;
         d.weaponState = {};
         d.buffs = [];
         d.enemyDebuffs = [];
@@ -97,8 +96,6 @@ const Dungeon = {
         document.getElementById('dungeon-name').textContent = dungeon.name;
         document.getElementById('floor-display').textContent = `B${d.currentFloor}F`;
         // btn-next-floor removed (auto-advance)
-        document.getElementById('btn-auto-toggle').textContent = '自動攻撃: OFF';
-
         // 武器UI初期化
         Weapons.init(stats.weaponType);
 

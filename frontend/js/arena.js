@@ -78,21 +78,45 @@ const Arena = {
         this.refreshOpponents();
     },
 
-    refreshOpponents() {
+    async refreshOpponents() {
         const container = document.getElementById('arena-opponents');
         if (!container) return;
 
+        // ログイン中はサーバーから実プレイヤーを取得
+        if (GameState.online.loggedIn) {
+            const res = await Api.getArenaOpponents();
+            if (res.ok && res.data.length > 0) {
+                this._renderOpponents(container, res.data.map(p => ({
+                    userId: p.userId,
+                    name: p.name,
+                    level: p.level,
+                    atk: p.atk,
+                    def: p.def,
+                    hp: p.hp,
+                    critRate: p.critRate,
+                    element: p.element,
+                    rank: p.rank
+                })));
+                return;
+            }
+        }
+
+        // フォールバック: NPC生成
         const rank = GameState.arena.rank;
         const opponents = [];
         for (let i = 0; i < 3; i++) {
             const oppRank = Math.max(1, rank + randomInt(-50, 50));
             opponents.push({
+                userId: null,
                 rank: oppRank,
                 ...this.generateOpponent(oppRank)
             });
         }
+        this._renderOpponents(container, opponents);
+    },
 
-        container.innerHTML = opponents.map((opp, i) => `
+    _renderOpponents(container, opponents) {
+        container.innerHTML = opponents.map((opp) => `
             <div class="equip-card" style="display:flex;justify-content:space-between;align-items:center">
                 <div>
                     <div style="font-weight:600">${opp.name} <span style="color:var(--text-muted)">(順位: ${opp.rank})</span></div>
@@ -168,7 +192,33 @@ const Arena = {
             `;
         }
 
+        // サーバーに結果報告
+        if (GameState.online.loggedIn && opponent.userId) {
+            const rankChange = won
+                ? Math.max(1, Math.floor((opponent.rank - GameState.arena.rank) / 5 + 5))
+                : randomInt(1, 3);
+            Api.reportArenaBattle(opponent.userId, won, rankChange).catch(() => {});
+        }
+
         this.render();
         Save.autoSave();
+    },
+
+    // ステータスのスナップショットをサーバーに保存（拠点帰還時に呼ばれる）
+    updateSnapshot() {
+        if (!GameState.online.loggedIn) return;
+        const stats = calculatePlayerStats();
+        const weapon = GameState.equipped.weapon;
+        Api.updateArenaSnapshot({
+            displayName: GameState.player.name,
+            level: GameState.dungeon.playerLevel || 1,
+            atk: stats.atk,
+            def: stats.def,
+            hp: stats.maxHP,
+            critRate: stats.critRate,
+            weaponElement: stats.weaponElement,
+            weaponName: weapon ? weapon.name : null,
+            arenaRank: GameState.arena.rank
+        }).catch(() => {});
     }
 };

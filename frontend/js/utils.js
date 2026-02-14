@@ -228,3 +228,18 @@ function updateBattleLogUI() {
 function starsDisplay(count) {
     return '★'.repeat(count) + '☆'.repeat(5 - count);
 }
+
+// パワーティア計算（スキルスタック合計数でエフェクト段階を決定）
+// Tier0=素朴, Tier1=覚醒, Tier2=練達, Tier3=極意, Tier4=神域
+function getSkillPowerTier() {
+    const d = GameState.dungeon;
+    let total = 0;
+    for (const id in d.acquiredSkills) {
+        total += d.acquiredSkills[id];
+    }
+    if (total >= 15) return 4;
+    if (total >= 10) return 3;
+    if (total >= 5)  return 2;
+    if (total >= 2)  return 1;
+    return 0;
+}

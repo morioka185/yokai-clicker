@@ -92,10 +92,6 @@ const GameState = {
         killsRequired: 5,
         floorCleared: false,
 
-        // 自動攻撃
-        autoAttack: false,
-        autoAttackTimer: null,
-
         // 武器UI状態
         weaponState: {},
 
@@ -137,7 +133,16 @@ const GameState = {
     },
 
     // 戦闘ログ
-    battleLog: []
+    battleLog: [],
+
+    // オンライン状態
+    online: {
+        loggedIn: false,
+        userId: null,
+        username: null,
+        displayName: null,
+        isGuest: false
+    }
 };
 
 // 状態のディープコピー

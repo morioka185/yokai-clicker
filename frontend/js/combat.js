@@ -160,10 +160,25 @@ const Combat = {
 
         targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
 
-        // ダメージ表示（ポジション連動、属性色付き）
         const posX = getPositionX(targetEnemy.position);
+        const tier = getSkillPowerTier();
+
+        // ダメージ表示（ポジション連動、属性色付き）
         showDamageNumber(damage, posX, 50, isCrit ? 'crit' : 'normal', elemOpts || {});
-        if (isCrit) screenShake();
+
+        // --- パワーティアベースのヒットエフェクト ---
+        this.showPowerHitEffect(targetEnemy, posX, tier, isCrit);
+
+        // 属性ヒットエフェクト
+        if (elemOpts && elemOpts.element) {
+            this.showElementHitEffect(targetEnemy, elemOpts.element, elemOpts.effectiveness, tier);
+        }
+
+        // クリティカル: ティアで振動/フラッシュ強化
+        if (isCrit) {
+            screenShake();
+            if (tier >= 2) this.showCritFlash(posX, tier);
+        }
 
         // 敵ヒットアニメーション
         const enemyVisual = document.getElementById(`enemy-visual-${targetEnemy.position}`);
@@ -182,6 +197,119 @@ const Combat = {
         }
     },
 
+    // === パワーティアベースのヒットエフェクト ===
+    showPowerHitEffect(target, posX, tier, isCrit) {
+        if (tier <= 0 && !isCrit) return; // Tier0通常は何もなし
+        const area = document.getElementById('enemy-area');
+        if (!area) return;
+
+        // Tier1+: インパクトリング
+        if (tier >= 1 || isCrit) {
+            const ring = document.createElement('div');
+            ring.className = `power-hit-ring tier-${Math.min(tier, 4)}`;
+            if (isCrit) ring.classList.add('crit');
+            ring.style.left = `${posX}%`;
+            ring.style.top = '55%';
+            area.appendChild(ring);
+            setTimeout(() => ring.remove(), 500 + tier * 50);
+        }
+
+        // Tier2+: スピードライン（3本）
+        if (tier >= 2) {
+            const lineCount = tier >= 4 ? 6 : tier >= 3 ? 4 : 3;
+            for (let i = 0; i < lineCount; i++) {
+                const line = document.createElement('div');
+                line.className = `power-speed-line tier-${Math.min(tier, 4)}`;
+                const angle = (i * (360 / lineCount) + randomInt(-15, 15));
+                line.style.setProperty('--line-angle', `${angle}deg`);
+                line.style.left = `${posX}%`;
+                line.style.top = '55%';
+                area.appendChild(line);
+                setTimeout(() => line.remove(), 400 + tier * 30);
+            }
+        }
+
+        // Tier3+: ヒットパーティクル
+        if (tier >= 3) {
+            const count = tier >= 4 ? 8 : 5;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = `power-particle tier-${Math.min(tier, 4)}`;
+                p.style.left = `${posX}%`;
+                p.style.top = '55%';
+                const angle = (i * (360 / count) + randomInt(-20, 20)) * Math.PI / 180;
+                const dist = randomInt(25, tier >= 4 ? 80 : 55);
+                p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+                p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+                area.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+
+        // Tier4: 背景パルスフラッシュ
+        if (tier >= 4) {
+            const pulse = document.createElement('div');
+            pulse.className = 'power-bg-pulse';
+            area.appendChild(pulse);
+            setTimeout(() => pulse.remove(), 400);
+        }
+    },
+
+    // === クリティカルフラッシュ（Tier2+） ===
+    showCritFlash(posX, tier) {
+        const area = document.getElementById('enemy-area');
+        if (!area) return;
+        const flash = document.createElement('div');
+        flash.className = `crit-burst tier-${Math.min(tier, 4)}`;
+        flash.style.left = `${posX}%`;
+        flash.style.top = '55%';
+        area.appendChild(flash);
+        setTimeout(() => flash.remove(), 600);
+    },
+
+    // === 属性ヒットエフェクト（プレイヤー攻撃用） ===
+    showElementHitEffect(target, element, effectiveness, tier) {
+        const area = document.getElementById('enemy-area');
+        if (!area) return;
+        const posX = getPositionX(target.position);
+        tier = tier !== undefined ? tier : getSkillPowerTier();
+
+        // 属性の輪エフェクト
+        const ring = document.createElement('div');
+        ring.className = `elem-hit-ring elem-hit-${element}`;
+        // ティアでサイズ拡大
+        if (tier >= 3) ring.classList.add('large');
+        ring.style.left = `${posX}%`;
+        ring.style.top = '55%';
+        area.appendChild(ring);
+        setTimeout(() => ring.remove(), 600);
+
+        // 属性パーティクル（ティアで数が増える）
+        const particleCount = 2 + tier;
+        for (let i = 0; i < particleCount; i++) {
+            const p = document.createElement('div');
+            p.className = `elem-hit-particle elem-particle-${element}`;
+            p.style.left = `${posX}%`;
+            p.style.top = '55%';
+            const angle = (i * (360 / particleCount) + randomInt(-20, 20)) * Math.PI / 180;
+            const dist = randomInt(30, 40 + tier * 10);
+            p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+            p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+            area.appendChild(p);
+            setTimeout(() => p.remove(), 500);
+        }
+
+        // 有利属性時は追加の大きなフラッシュ
+        if (effectiveness > 1) {
+            const flash = document.createElement('div');
+            flash.className = `elem-hit-super elem-hit-${element}`;
+            flash.style.left = `${posX}%`;
+            flash.style.top = '55%';
+            area.appendChild(flash);
+            setTimeout(() => flash.remove(), 800);
+        }
+    },
+
     healPlayer(amount) {
         const d = GameState.dungeon;
         d.playerHP = Math.min(d.playerMaxHP, d.playerHP + amount);
@@ -195,6 +323,7 @@ const Combat = {
     // === 個別敵撃破処理 ===
     onEnemyDefeated(enemy) {
         const d = GameState.dungeon;
+        const tier = getSkillPowerTier();
 
         // SE
         SoundManager.enemyDefeat();
@@ -208,6 +337,9 @@ const Combat = {
         if (slot) {
             setTimeout(() => slot.classList.add('defeated'), 500);
         }
+
+        // 撃破エフェクト（パワーティアで派手に）
+        this.showDefeatEffect(enemy, tier);
 
         const stats = calculatePlayerStats();
 
@@ -592,8 +724,8 @@ const Combat = {
             }
         }
 
-        // 自動攻撃（先頭の生存敵を攻撃）
-        if (d.autoAttack && alive.length > 0) {
+        // 自動攻撃（スキル「自律戦闘」取得時、先頭の生存敵を攻撃）
+        if (d.acquiredSkills['jintsuu_jidou'] && alive.length > 0) {
             const atkInterval = Math.max(0.3, 1.0 / (1 + stats.atkSpeed / 100));
             if (!d.autoAttackAccum) d.autoAttackAccum = 0;
             d.autoAttackAccum += dt;
@@ -875,6 +1007,62 @@ const Combat = {
         }
     },
 
+    // === 撃破エフェクト（パワーティアスケール） ===
+    showDefeatEffect(enemy, tier) {
+        const area = document.getElementById('enemy-area');
+        if (!area) return;
+        const posX = getPositionX(enemy.position);
+
+        // Tier1+: 撃破バースト（白い爆発リング）
+        if (tier >= 1) {
+            const burst = document.createElement('div');
+            burst.className = `defeat-burst tier-${Math.min(tier, 4)}`;
+            burst.style.left = `${posX}%`;
+            burst.style.top = '55%';
+            area.appendChild(burst);
+            setTimeout(() => burst.remove(), 700);
+        }
+
+        // Tier2+: 撃破パーティクル散乱
+        if (tier >= 2) {
+            const count = tier >= 4 ? 12 : tier >= 3 ? 8 : 5;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = `defeat-particle tier-${Math.min(tier, 4)}`;
+                p.style.left = `${posX}%`;
+                p.style.top = '55%';
+                const angle = (i * (360 / count) + randomInt(-10, 10)) * Math.PI / 180;
+                const dist = randomInt(40, 60 + tier * 15);
+                p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+                p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+                area.appendChild(p);
+                setTimeout(() => p.remove(), 600 + tier * 50);
+            }
+        }
+
+        // Tier3+: 画面フラッシュ
+        if (tier >= 3) {
+            const flash = document.createElement('div');
+            flash.className = `defeat-screen-flash tier-${Math.min(tier, 4)}`;
+            area.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+            screenShake();
+        }
+
+        // Tier4: 十字衝撃波
+        if (tier >= 4) {
+            for (let i = 0; i < 4; i++) {
+                const wave = document.createElement('div');
+                wave.className = 'defeat-cross-wave';
+                wave.style.left = `${posX}%`;
+                wave.style.top = '55%';
+                wave.style.setProperty('--wave-angle', `${i * 45}deg`);
+                area.appendChild(wave);
+                setTimeout(() => wave.remove(), 600);
+            }
+        }
+    },
+
     // === 式神ダメージ適用（独自のダメージ数字表示は呼び出し側で済み） ===
     applyShikigamiDamage(damage, targetEnemy) {
         const d = GameState.dungeon;
@@ -906,10 +1094,9 @@ const Combat = {
         label.className = `shikigami-skill-label ${elemClass}`;
         label.textContent = `${data.emoji} ${data.skill.name}`;
         label.style.left = '50%';
-        label.style.top = '18%';
-        label.style.transform = 'translateX(-50%)';
+        label.style.top = '15%';
         container.appendChild(label);
-        setTimeout(() => label.remove(), 1500);
+        setTimeout(() => label.remove(), 1800);
     },
 
     // 個別ヒットエフェクト（敵位置に属性エフェクト表示）
@@ -924,7 +1111,10 @@ const Combat = {
         fx.style.top = '55%';
         fx.style.transform = 'translate(-50%, -50%)';
         area.appendChild(fx);
-        setTimeout(() => fx.remove(), 700);
+        setTimeout(() => fx.remove(), 900);
+
+        // 画面振動（大ダメージ感）
+        screenShake();
     },
 
     // AoE全体エフェクト
@@ -935,7 +1125,10 @@ const Combat = {
         const elemClass = element ? `element-${element}` : 'element-none';
         fx.className = `shiki-fx-aoe ${elemClass}`;
         area.appendChild(fx);
-        setTimeout(() => fx.remove(), 800);
+        setTimeout(() => fx.remove(), 1000);
+
+        // AoEは強めの振動
+        screenShake();
     },
 
     // ヒールエフェクト
@@ -945,7 +1138,7 @@ const Combat = {
         const fx = document.createElement('div');
         fx.className = 'shiki-fx-heal';
         area.appendChild(fx);
-        setTimeout(() => fx.remove(), 900);
+        setTimeout(() => fx.remove(), 1100);
     },
 
     // デバフエフェクト（個別敵に紫エフェクト）
@@ -959,13 +1152,13 @@ const Combat = {
         fx.style.top = '55%';
         fx.style.transform = 'translate(-50%, -50%)';
         area.appendChild(fx);
-        setTimeout(() => fx.remove(), 600);
+        setTimeout(() => fx.remove(), 800);
     },
 
     // 式神パネルスロット発動フラッシュ
     flashShikigamiSlot(partyIndex, element) {
         if (partyIndex < 0) return;
-        const slot = document.querySelector(`#shikigami-party .shikigami-slot:nth-child(${partyIndex + 2})`);
+        const slot = document.querySelector(`#shikigami-party .shikigami-slot[data-shiki-index="${partyIndex}"]`);
         if (!slot) return;
         slot.classList.remove('skill-active', 'skill-active-fire', 'skill-active-water',
             'skill-active-thunder', 'skill-active-earth', 'skill-active-wood');

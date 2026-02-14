@@ -20,6 +20,9 @@
 
         // タブ初期化
         UI.initTabs();
+
+        // 自動ログイン試行
+        Auth.tryAutoLogin();
     }
 
     // ===== タイトルパーティクル =====
@@ -95,15 +98,6 @@
             Weapons.handleClick(e);
         }, { passive: false });
 
-        // 自動攻撃
-        document.getElementById('btn-auto-toggle').addEventListener('click', () => {
-            GameState.dungeon.autoAttack = !GameState.dungeon.autoAttack;
-            document.getElementById('btn-auto-toggle').textContent =
-                GameState.dungeon.autoAttack ? '自動: ON (50%)' : '自動攻撃: OFF';
-            document.getElementById('btn-auto-toggle').style.borderColor =
-                GameState.dungeon.autoAttack ? 'var(--accent-green)' : 'var(--border-color)';
-        });
-
         // 撤退
         document.getElementById('btn-retreat').addEventListener('click', () => {
             if (confirm('撤退しますか？（集めたアイテムは持ち帰れます）')) {
@@ -140,6 +134,7 @@
         document.getElementById('btn-back-village-arena').addEventListener('click', () => goToVillage());
         document.getElementById('btn-back-village-enc').addEventListener('click', () => goToVillage());
         document.getElementById('btn-back-village-settings').addEventListener('click', () => goToVillage());
+        document.getElementById('btn-back-village-lb').addEventListener('click', () => goToVillage());
 
         // --- キーボードショートカット ---
         document.addEventListener('keydown', (e) => {
@@ -152,10 +147,6 @@
                 Weapons.handleClick(e);
             }
 
-            // Aで自動攻撃トグル
-            if (e.code === 'KeyA') {
-                document.getElementById('btn-auto-toggle').click();
-            }
         });
 
         // --- オートセーブ ---
@@ -242,6 +233,8 @@
         switchScreen('village');
         UI.updateVillageSummary();
         Encyclopedia.checkAllAchievements();
+        // 拠点帰還時に闘技場スナップショット更新
+        Arena.updateSnapshot();
     }
     window.goToVillage = goToVillage;
 
@@ -271,6 +264,10 @@
             case 'arena':
                 switchScreen('arena');
                 Arena.render();
+                break;
+            case 'leaderboard':
+                switchScreen('leaderboard');
+                Leaderboard.render();
                 break;
             case 'shop':
                 switchScreen('village');

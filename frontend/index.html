@@ -21,6 +21,11 @@
                     <div class="title-menu">
                         <button class="btn btn-primary btn-lg" id="btn-new-game">新しき旅へ</button>
                         <button class="btn btn-secondary btn-lg" id="btn-load-game" style="display:none;">続きから</button>
+                        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
+                            <button class="btn btn-sm" id="btn-title-login" onclick="Auth.showLoginModal()">ログイン</button>
+                            <button class="btn btn-sm" id="btn-title-guest" onclick="Auth.doGuestLogin()">ゲストで遊ぶ</button>
+                        </div>
+                        <div id="title-logged-in" style="display:none;margin-top:8px;font-size:13px;color:var(--accent-green);text-align:center"></div>
                     </div>
                 </div>
             </div>
@@ -72,6 +77,11 @@
                     <span class="village-icon">🏟️</span>
                     <span class="village-label">闘技場</span>
                     <span class="village-desc">対戦・ランキング</span>
+                </button>
+                <button class="village-btn" data-location="leaderboard">
+                    <span class="village-icon">🏆</span>
+                    <span class="village-label">ランキング</span>
+                    <span class="village-desc">全国の退魔師</span>
                 </button>
                 <button class="village-btn" data-location="encyclopedia">
                     <span class="village-icon">📖</span>
@@ -196,7 +206,6 @@
             <div class="battle-footer">
                 <div class="battle-controls">
                     <button class="btn btn-sm mobile-info-toggle" id="btn-mobile-info">📋</button>
-                    <button class="btn btn-sm" id="btn-auto-toggle">自動攻撃: OFF</button>
                     <button class="btn btn-sm btn-danger" id="btn-retreat">撤退</button>
                 </div>
             </div>
@@ -312,6 +321,20 @@
             <div class="settings-content" id="settings-content"></div>
         </div>
 
+        <!-- ===== ランキング画面 ===== -->
+        <div id="leaderboard-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-back-village-lb">← 里に戻る</button>
+                <h2>🏆 ランキング</h2>
+            </div>
+            <div class="leaderboard-content" id="leaderboard-content"></div>
+        </div>
+
+        <!-- ===== 認証モーダル ===== -->
+        <div id="auth-modal" class="modal">
+            <div class="modal-content" style="max-width:400px" id="auth-modal-content"></div>
+        </div>
+
         <!-- 通知 -->
         <div id="notification-container"></div>
     </div>
@@ -325,6 +348,8 @@
     <script src="js/sound.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/combat.js"></script>
     <script src="js/weapons.js"></script>
     <script src="js/dungeon.js"></script>
@@ -333,6 +358,7 @@
     <script src="js/smithy.js"></script>
     <script src="js/gacha.js"></script>
     <script src="js/arena.js"></script>
+    <script src="js/leaderboard.js"></script>
     <script src="js/encyclopedia.js"></script>
     <script src="js/save.js"></script>
     <script src="js/ui.js"></script>

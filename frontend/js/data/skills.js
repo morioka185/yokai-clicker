@@ -133,5 +133,11 @@ const LEVELUP_SKILLS = {
         desc: '与ダメの5%をHP回復',
         effect: { lifeSteal: 5 },
         stackable: true, maxStack: 3
+    },
+    jintsuu_jidou: {
+        id: 'jintsuu_jidou', name: '自律戦闘', category: 'jintsuu',
+        desc: '自動で敵を攻撃する（威力50%）',
+        effect: { autoAttack: true },
+        stackable: false
     }
 };
