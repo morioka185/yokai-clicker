@@ -191,22 +191,39 @@
         Shikigami.obtainShikigami('kodama');
         Shikigami.obtainShikigami('hinotama_shiki');
 
-        // 初期装備
-        const starterWeapon = {
-            uid: generateUID(),
-            name: '退魔の木刀',
-            slot: 'weapon',
-            weaponType: 'katana',
-            rarity: 'common',
-            atk: 15,
-            def: 0,
-            hp: 0,
-            element: null,
-            enchants: [],
-            enhanceLevel: 0,
-            fixedEffect: null
-        };
-        GameState.equipped.weapon = starterWeapon;
+        // 初期装備（全6種の武器を付与）
+        const starterWeapons = [
+            { name: '退魔の木刀',   weaponType: 'katana', atk: 15 },
+            { name: '退魔の短弓',   weaponType: 'bow',    atk: 12 },
+            { name: '退魔の竹槍',   weaponType: 'spear',  atk: 13 },
+            { name: '退魔の手甲',   weaponType: 'fist',   atk: 10 },
+            { name: '退魔の木杖',   weaponType: 'staff',  atk: 11 },
+            { name: '退魔の木槌',   weaponType: 'hammer', atk: 14 },
+        ];
+
+        starterWeapons.forEach((w, i) => {
+            const item = {
+                uid: generateUID(),
+                name: w.name,
+                slot: 'weapon',
+                weaponType: w.weaponType,
+                rarity: 'common',
+                atk: w.atk,
+                def: 0,
+                hp: 0,
+                element: null,
+                enchants: [],
+                enhanceLevel: 0,
+                fixedEffect: null
+            };
+            if (i === 0) {
+                // 最初の武器（刀）を装備
+                GameState.equipped.weapon = item;
+            } else {
+                // 残りはインベントリへ
+                GameState.inventory.equipment.push(item);
+            }
+        });
 
         // 初期素材
         GameState.inventory.materials['wood_shard'] = 10;
