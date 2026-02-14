@@ -479,6 +479,23 @@ const Weapons = {
         const s = this.state;
         if (!ui) ui = document.getElementById('weapon-ui');
 
+        // 詠唱順序の表示
+        const sequenceHtml = s.pattern.map((n, idx) => {
+            if (idx < s.currentIndex) return `<span class="seq-done">${n + 1}</span>`;
+            if (idx === s.currentIndex) return `<span class="seq-current">${n + 1}</span>`;
+            return `<span class="seq-pending">${n + 1}</span>`;
+        }).join('<span class="seq-arrow">→</span>');
+
+        // ノードの生成（正解済み・次のターゲット・通常を区別）
+        let nodesHtml = '';
+        for (let i = 0; i < s.nodeCount; i++) {
+            const isNext = !s.completed && s.pattern[s.currentIndex] === i;
+            const isDone = s.pattern.slice(0, s.currentIndex).includes(i) && !isNext;
+            let cls = 'magic-node';
+            if (isNext) cls += ' next';
+            nodesHtml += `<div class="${cls}" data-node="${i}" onclick="Weapons.clickStaffNode(${i})">${i + 1}</div>`;
+        }
+
         let html = `<div class="weapon-ui-inner staff-theme">
             <div class="weapon-header">
                 <span class="weapon-type-badge staff-badge">🪄 杖</span>
@@ -486,22 +503,11 @@ const Weapons = {
             </div>
             <div class="weapon-main-display">
                 <div class="staff-layout">
-                    <div class="magic-pattern">`;
-        for (let i = 0; i < s.nodeCount; i++) {
-            const isNext = !s.completed && s.pattern[s.currentIndex] === i;
-            html += `<div class="magic-node ${isNext ? 'next' : ''}" data-node="${i}" onclick="Weapons.clickStaffNode(${i})">${i + 1}</div>`;
-        }
-        html += `</div>
-                    <div class="staff-info">
-                        <div class="staff-sequence" id="staff-hint">詠唱順: `;
-        html += s.pattern.map((n, idx) => {
-            if (idx < s.currentIndex) return `<span class="seq-done">${n + 1}</span>`;
-            if (idx === s.currentIndex) return `<span class="seq-current">${n + 1}</span>`;
-            return `<span class="seq-pending">${n + 1}</span>`;
-        }).join('<span class="seq-arrow">→</span>');
-        html += `</div>
-                        <div class="weapon-tip-text">光っている番号を順にタップ！</div>
+                    <div class="staff-sequence-row">
+                        <div class="staff-sequence" id="staff-hint">${sequenceHtml}</div>
                     </div>
+                    <div class="magic-pattern">${nodesHtml}</div>
+                    <div class="weapon-tip-text">順番通りにタップして詠唱完成！</div>
                 </div>
             </div>
         </div>`;
